@@ -150,16 +150,17 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // --- Firebase Configuration ---
-        // Dynamically use environment config if available, otherwise fall back to placeholders
+        // Dynamically use environment config if available, otherwise fall back to user-provided config
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config) 
             : {
-                apiKey: "ВАШ_API_KEY",
-                authDomain: "ВАШ_PROJECT.firebaseapp.com",
-                projectId: "ВАШ_PROJECT_ID",
-                storageBucket: "ВАШ_PROJECT.appspot.com",
-                messagingSenderId: "ВАШ_SENDER_ID",
-                appId: "ВАШ_APP_ID"
+                apiKey: "AIzaSyDaYnBz2Bdv-nqETKlIQaKid_umHgr_2N0",
+                authDomain: "sleeptracker-5962d.firebaseapp.com",
+                projectId: "sleeptracker-5962d",
+                storageBucket: "sleeptracker-5962d.firebasestorage.app",
+                messagingSenderId: "801320667080",
+                appId: "1:801320667080:web:ec5e994bcedc1ba24ca2fd",
+                measurementId: "G-NNMGKSTYG8"
             };
 
         const app = initializeApp(firebaseConfig);
