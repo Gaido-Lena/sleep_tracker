@@ -3,239 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sleep Tracker & Dashboard</title>
+    <title>Sleep Lab Dashboard 🌙</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #f1f5f9; color: #1e293b; font-family: sans-serif; }
-        .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .input-field { width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; margin-top: 0.25rem; }
-        .btn-indigo { background-color: #6366f1; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; }
-        .btn-indigo:hover { background-color: #4f46e5; }
-        .tab-btn { padding: 0.5rem 1rem; font-weight: 600; border-bottom: 2px solid transparent; }
-        .tab-btn.active { border-color: #6366f1; color: #6366f1; }
+        body { background-color: #f8fafc; color: #1e293b; font-family: sans-serif; }
+        .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .input-field { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; margin-top: 0.25rem; }
+        .btn-primary { background-color: #6366f1; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; }
+        .tab-btn { padding: 0.75rem 1rem; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; }
+        .tab-btn.active { color: #6366f1; border-color: #6366f1; }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-4xl mx-auto">
-        <header class="mb-8 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-indigo-900">Sleep Dashboard 🌙</h1>
-                <p class="text-slate-500">Эксперимент: Сова в 6 утра</p>
+<body class="pb-12">
+    <!-- ЭКРАН ВХОДА -->
+    <div id="auth-screen" class="fixed inset-0 bg-slate-100 z-[100] flex items-center justify-center p-4">
+        <div class="card p-8 w-full max-w-md">
+            <h2 class="text-2xl font-bold text-center mb-6 text-indigo-900">Вход в Sleep Lab 🌙</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-600">Email</label>
+                    <input type="email" id="login-email" class="input-field" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-600">Пароль</label>
+                    <input type="password" id="login-password" class="input-field" required>
+                </div>
+                <button type="submit" id="login-btn" class="btn-primary w-full mt-4">Войти</button>
+                <p id="login-error" class="text-rose-500 text-sm text-center hidden">Неверный логин или пароль</p>
+            </form>
+            <p class="text-xs text-slate-400 mt-4 text-center">Если вы используете GitHub Pages, убедитесь, что создали пользователя в консоли Firebase.</p>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div id="main-content" class="max-w-5xl mx-auto px-4 pt-8 hidden">
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4">
+                <h1 class="text-3xl font-bold text-slate-900">Sleep Lab <span class="text-indigo-600">Secure</span> 🌙</h1>
+                <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-500 underline">Выйти</button>
             </div>
-            <div class="flex gap-2">
-                <button onclick="switchTab('form')" id="tabForm" class="tab-btn active">Ввод данных</button>
-                <button onclick="switchTab('stats')" id="tabStats" class="tab-btn">Аналитика</button>
-            </div>
+            <nav class="flex bg-white rounded-xl shadow-sm border p-1">
+                <button onclick="switchTab('form')" id="tab-form" class="tab-btn active">Ввод</button>
+                <button onclick="switchTab('history')" id="tab-history" class="tab-btn">История</button>
+                <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn">Аналитика</button>
+            </nav>
         </header>
 
-        <!-- ВКЛАДКА: ФОРМА -->
-        <div id="sectionForm" class="space-y-6">
+        <!-- VIEW: FORM -->
+        <main id="view-form" class="space-y-6">
             <div class="card p-6">
-                <form id="sleepForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form id="sleep-form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">Дата</label>
-                        <input type="date" id="date" class="input-field" required>
+                        <label class="block text-sm font-semibold text-slate-600">Дата</label>
+                        <input type="date" id="input-date" class="input-field" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">Подъем (06:00?)</label>
-                        <input type="time" id="wakeTime" class="input-field" value="06:00">
+                        <label class="block text-sm font-semibold text-slate-600">Подъем (факт)</label>
+                        <input type="time" id="input-wake" class="input-field" value="06:00">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">Источник света</label>
-                        <select id="lightSource" class="input-field">
-                            <option value="Кухня">Кухня (яркий свет)</option>
-                            <option value="Лампа">Лайтбокс (лампа)</option>
-                            <option value="Нет">Без спец. света</option>
-                        </select>
+                        <label class="block text-sm font-semibold text-slate-600">Энергетики (шт)</label>
+                        <input type="number" id="input-energy" class="input-field" value="1" min="0">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Энергетики (шт)</label>
-                        <input type="number" id="energyDrinks" class="input-field" value="1" min="0">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Заснула (браслет)</label>
-                        <input type="time" id="sleepTime" class="input-field">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700">Глубокий сон (%)</label>
-                        <input type="number" id="deepSleep" class="input-field" placeholder="Напр: 22">
-                    </div>
-                    
-                    <!-- НОВОЕ: ОБЩЕЕ КОЛИЧЕСТВО СНА -->
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-slate-700">Всего сна (по браслету)</label>
-                        <div class="flex gap-4">
+
+                    <!-- Основные метрики браслета -->
+                    <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">Заснула</label>
+                            <input type="time" id="input-sleep-at" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">Баллы сна</label>
+                            <input type="number" id="input-score" class="input-field" placeholder="0-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">Глубокий %</label>
+                            <input type="number" id="input-deep" class="input-field">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">Пробуждения</label>
+                            <input type="number" id="input-awakenings" class="input-field" placeholder="Кол-во">
+                        </div>
+                        <div class="flex gap-2">
                             <div class="flex-1">
-                                <input type="number" id="totalHours" class="input-field" placeholder="Часов" min="0" max="24">
+                                <label class="block text-sm font-semibold text-slate-600">Всего ч.</label>
+                                <input type="number" id="input-hours" class="input-field">
                             </div>
                             <div class="flex-1">
-                                <input type="number" id="totalMinutes" class="input-field" placeholder="Минут" min="0" max="59">
+                                <label class="block text-sm font-semibold text-slate-600">мин.</label>
+                                <input type="number" id="input-mins" class="input-field">
                             </div>
                         </div>
                     </div>
 
-                    <div class="md:col-span-2 flex gap-6">
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="migraine" class="rounded border-gray-300 text-indigo-600">
-                            <span class="ml-2 text-sm text-slate-700">⚠️ Мигрень</span>
+                    <div class="md:col-span-3 flex flex-wrap gap-6 py-2">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="input-migraine" class="w-4 h-4 text-indigo-600 rounded">
+                            <span class="ml-2 text-sm font-medium text-slate-700">⚠️ Мигрень</span>
                         </label>
-                        <label class="inline-flex items-center">
-                            <input type="checkbox" id="rule20" class="rounded border-gray-300 text-indigo-600">
-                            <span class="ml-2 text-sm text-slate-700">✅ Правило 20 мин</span>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="input-rule20" class="w-4 h-4 text-indigo-600 rounded">
+                            <span class="ml-2 text-sm font-medium text-slate-700">✅ Правило 20 мин</span>
                         </label>
                     </div>
-                    <div class="md:col-span-2">
-                        <textarea id="comment" rows="2" class="input-field" placeholder="Комментарий..."></textarea>
-                    </div>
-                    <div class="md:col-span-2 flex gap-4">
-                        <button type="button" onclick="saveEntry()" class="btn-indigo flex-1">Сохранить запись</button>
-                        <button type="button" onclick="copyFullTable()" class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg font-bold hover:bg-emerald-200">Копировать таблицу для Obsidian</button>
+
+                    <div class="md:col-span-3">
+                        <button type="submit" id="submit-btn" class="btn-primary w-full md:w-auto">Сохранить в облако</button>
                     </div>
                 </form>
             </div>
+        </main>
 
-            <div class="card p-6">
-                <h3 class="font-bold text-slate-800 mb-4 text-lg">Последние записи</h3>
-                <div id="logHistory" class="space-y-2 max-h-60 overflow-y-auto">
-                    <!-- Записи появятся здесь -->
-                </div>
+        <!-- VIEW: HISTORY -->
+        <section id="view-history" class="hidden card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Дата</th>
+                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Баллы</th>
+                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Сон (Всего)</th>
+                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Глубокий %</th>
+                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Пробужд.</th>
+                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Мигрень</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body" class="divide-y divide-slate-200"></tbody>
+                </table>
             </div>
-        </div>
+        </section>
 
-        <!-- ВКЛАДКА: СТАТИСТИКА -->
-        <div id="sectionStats" class="hidden space-y-6">
+        <!-- VIEW: STATS -->
+        <section id="view-stats" class="hidden space-y-6">
             <div class="card p-6">
-                <h3 class="font-bold text-slate-800 mb-4">Динамика глубокого сна (%)</h3>
-                <canvas id="deepSleepChart" height="150"></canvas>
+                <h3 class="font-bold text-slate-800 mb-4">Тренд качества сна (Баллы)</h3>
+                <canvas id="chart-main" height="120"></canvas>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="card p-6 text-center">
-                    <p class="text-xs text-slate-500 uppercase font-bold">Ср. Глубокий сон</p>
-                    <p id="avgDeep" class="text-3xl font-bold text-indigo-600">0%</p>
-                </div>
-                <div class="card p-6 text-center">
-                    <p class="text-xs text-slate-500 uppercase font-bold">Ср. Время сна</p>
-                    <p id="avgTotal" class="text-3xl font-bold text-emerald-600">0ч 0м</p>
-                </div>
-                <div class="card p-6 text-center">
-                    <p class="text-xs text-slate-500 uppercase font-bold">Дней с мигренью</p>
-                    <p id="migraineCount" class="text-3xl font-bold text-rose-500">0</p>
-                </div>
-                <div class="card p-6 text-center">
-                    <p class="text-xs text-slate-500 uppercase font-bold">Всего логов</p>
-                    <p id="totalLogs" class="text-3xl font-bold text-slate-700">0</p>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
 
-    <script>
-        let db = JSON.parse(localStorage.getItem('sleep_tracker_db') || '[]');
-        let chartInstance = null;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        document.getElementById('date').valueAsDate = new Date();
-
-        function switchTab(tab) {
-            document.getElementById('sectionForm').classList.toggle('hidden', tab !== 'form');
-            document.getElementById('sectionStats').classList.toggle('hidden', tab !== 'stats');
-            document.getElementById('tabForm').classList.toggle('active', tab === 'form');
-            document.getElementById('tabStats').classList.toggle('active', tab === 'stats');
-            if (tab === 'stats') updateDashboard();
-        }
-
-        function saveEntry() {
-            const h = document.getElementById('totalHours').value || 0;
-            const m = document.getElementById('totalMinutes').value || 0;
-            
-            const entry = {
-                date: document.getElementById('date').value,
-                wake: document.getElementById('wakeTime').value,
-                light: document.getElementById('lightSource').value,
-                energy: document.getElementById('energyDrinks').value,
-                sleep: document.getElementById('sleepTime').value || '--:--',
-                deep: parseInt(document.getElementById('deepSleep').value) || 0,
-                total: parseInt(h) * 60 + parseInt(m), // Храним в минутах
-                migraine: document.getElementById('migraine').checked,
-                rule20: document.getElementById('rule20').checked,
-                comment: document.getElementById('comment').value || '-'
+        // --- Firebase Configuration ---
+        // Dynamically use environment config if available, otherwise fall back to placeholders
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "ВАШ_API_KEY",
+                authDomain: "ВАШ_PROJECT.firebaseapp.com",
+                projectId: "ВАШ_PROJECT_ID",
+                storageBucket: "ВАШ_PROJECT.appspot.com",
+                messagingSenderId: "ВАШ_SENDER_ID",
+                appId: "ВАШ_APP_ID"
             };
 
-            db = db.filter(item => item.date !== entry.date); 
-            db.push(entry);
-            db.sort((a, b) => new Date(b.date) - new Date(a.date));
-            localStorage.setItem('sleep_tracker_db', JSON.stringify(db));
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-sleep-tracker';
+
+        let sleepData = [];
+        let chart = null;
+
+        // AUTH INITIALIZATION
+        async function attemptAutoAuth() {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch (e) {
+                    console.error("Auto-auth failed, showing login screen");
+                }
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                syncData();
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('hidden');
+                attemptAutoAuth();
+            }
+        });
+
+        // LOGIN FUNCTION
+        document.getElementById('login-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const btn = document.getElementById('login-btn');
+            const errorEl = document.getElementById('login-error');
             
-            renderHistory();
-            alert('Запись сохранена!');
-        }
+            btn.disabled = true;
+            btn.innerText = "Вход...";
+            errorEl.classList.add('hidden');
 
-        function renderHistory() {
-            const list = document.getElementById('logHistory');
-            list.innerHTML = db.slice(0, 10).map(item => {
-                const hh = Math.floor(item.total / 60);
-                const mm = item.total % 60;
-                return `
-                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <span><strong>${formatDate(item.date)}</strong> — ${hh}ч ${mm}м (Глубокий: ${item.deep}%)</span>
-                    <span class="text-xs text-slate-400">${item.migraine ? '⚠️' : ''} ${item.rule20 ? '✅' : ''}</span>
-                </div>
-                `;
-            }).join('');
-        }
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (err) {
+                errorEl.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Войти";
+            }
+        };
 
-        function formatDate(dateStr) {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) + ' (' + d.toLocaleDateString('ru-RU', { weekday: 'short' }) + ')';
-        }
+        window.logout = () => signOut(auth);
 
-        function copyFullTable() {
-            let table = "| Дата | Подъем | Свет | Энерг. | Заснула | Всего сна | Глубокий % | Мигрень | Пр. 20 мин | Коммент |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n";
-            db.slice().reverse().forEach(item => {
-                const hh = Math.floor(item.total / 60);
-                const mm = item.total % 60;
-                table += `| ${formatDate(item.date)} | ${item.wake} | ${item.light} | ${item.energy} | ${item.sleep} | ${hh}ч ${mm}м | ${item.deep}% | ${item.migraine ? '⚠️ Да' : 'Нет'} | ${item.rule20 ? '✅ Да' : 'Нет'} | ${item.comment} |\n`;
+        function syncData() {
+            if (!auth.currentUser) return;
+            // RULE 1: Strict Paths
+            const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
+            onSnapshot(logsRef, (snapshot) => {
+                sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(b.date) - new Date(a.date));
+                updateUI();
+            }, (error) => {
+                console.error("Firestore sync error:", error);
             });
-            
-            const tempInput = document.createElement("textarea");
-            tempInput.value = table;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
-            alert('Таблица для Obsidian скопирована!');
         }
 
-        function updateDashboard() {
-            const sortedDb = db.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
-            const labels = sortedDb.map(item => formatDate(item.date));
-            const deepData = sortedDb.map(item => item.deep);
+        window.switchTab = (tab) => {
+            ['form', 'history', 'stats'].forEach(t => document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab));
+            ['tab-form', 'tab-history', 'tab-stats'].forEach(t => document.getElementById(t).classList.toggle('active', t === `tab-${tab}`));
+            if (tab === 'stats') renderChart();
+        };
 
-            document.getElementById('totalLogs').innerText = db.length;
-            document.getElementById('migraineCount').innerText = db.filter(i => i.migraine).length;
-            
-            const avgDeep = db.length ? (db.reduce((acc, i) => acc + i.deep, 0) / db.length).toFixed(1) : 0;
-            document.getElementById('avgDeep').innerText = avgDeep + '%';
+        document.getElementById('sleep-form').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!auth.currentUser) return;
 
-            const avgTotalMin = db.length ? (db.reduce((acc, i) => acc + i.total, 0) / db.length) : 0;
-            const avgH = Math.floor(avgTotalMin / 60);
-            const avgM = Math.round(avgTotalMin % 60);
-            document.getElementById('avgTotal').innerText = `${avgH}ч ${avgM}м`;
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Сохранение...";
 
-            if (chartInstance) chartInstance.destroy();
+            const date = document.getElementById('input-date').value;
+            const entry = {
+                date,
+                wake: document.getElementById('input-wake').value,
+                energy: parseInt(document.getElementById('input-energy').value) || 0,
+                score: parseInt(document.getElementById('input-score').value) || 0,
+                deep: parseInt(document.getElementById('input-deep').value) || 0,
+                awakenings: parseInt(document.getElementById('input-awakenings').value) || 0,
+                totalMinutes: (parseInt(document.getElementById('input-hours').value) || 0) * 60 + (parseInt(document.getElementById('input-mins').value) || 0),
+                migraine: document.getElementById('input-migraine').checked,
+                rule20: document.getElementById('input-rule20').checked,
+                sleepAt: document.getElementById('input-sleep-at').value || "--:--",
+                updatedAt: new Date().toISOString()
+            };
 
-            const ctx = document.getElementById('deepSleepChart').getContext('2d');
-            chartInstance = new Chart(ctx, {
+            try {
+                // RULE 1: Strict Paths
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'logs', date);
+                await setDoc(docRef, entry);
+                alert("Данные синхронизированы!");
+            } catch (err) {
+                console.error("Save error:", err);
+                alert("Ошибка доступа. Убедитесь, что вы авторизованы.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Сохранить в облако";
+            }
+        };
+
+        function updateUI() {
+            const body = document.getElementById('history-body');
+            body.innerHTML = sleepData.map(d => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 text-sm font-medium text-slate-700">${new Date(d.date).toLocaleDateString('ru-RU')}</td>
+                    <td class="p-4 text-sm"><span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded font-bold">${d.score || 0}</span></td>
+                    <td class="p-4 text-sm text-slate-600">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
+                    <td class="p-4 text-sm text-slate-600">${d.deep}%</td>
+                    <td class="p-4 text-sm text-slate-600">${d.awakenings || 0}</td>
+                    <td class="p-4 text-sm">${d.migraine ? '<span class="text-rose-500 font-bold">⚠️ Да</span>' : 'Нет'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('chart-main').getContext('2d');
+            const sorted = [...sleepData].sort((a,b) => new Date(a.date) - new Date(b.date));
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Глубокий сон (%)',
-                        data: deepData,
-                        borderColor: '#6366f1',
+                    labels: sorted.map(d => new Date(d.date).toLocaleDateString('ru-RU', {day:'numeric', month:'short'})),
+                    datasets: [{ 
+                        label: 'Баллы сна', 
+                        data: sorted.map(d => d.score), 
+                        borderColor: '#6366f1', 
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         fill: true,
-                        tension: 0.3
+                        tension: 0.3 
                     }]
                 },
                 options: {
@@ -245,30 +310,7 @@
             });
         }
 
-        window.onload = renderHistory;
+        document.getElementById('input-date').valueAsDate = new Date();
     </script>
-    <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyDaYnBz2Bdv-nqETKlIQaKid_umHgr_2N0",
-    authDomain: "sleeptracker-5962d.firebaseapp.com",
-    projectId: "sleeptracker-5962d",
-    storageBucket: "sleeptracker-5962d.firebasestorage.app",
-    messagingSenderId: "801320667080",
-    appId: "1:801320667080:web:ec5e994bcedc1ba24ca2fd",
-    measurementId: "G-NNMGKSTYG8"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 </body>
 </html>
