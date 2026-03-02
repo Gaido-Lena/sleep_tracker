@@ -11,9 +11,19 @@
         .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
         .input-field { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; margin-top: 0.25rem; }
         .btn-primary { background-color: #6366f1; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; }
-        .tab-btn { padding: 0.75rem 1rem; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; }
+        .tab-btn { padding: 0.75rem 1rem; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
         .tab-btn.active { color: #6366f1; border-color: #6366f1; }
         .hidden { display: none !important; }
+        
+        /* Стили для приоритетов гипотез */
+        .priority-high { border-left: 4px solid #ef4444; }
+        .priority-med { border-left: 4px solid #f59e0b; }
+        .priority-low { border-left: 4px solid #10b981; }
+
+        /* Стили для расписания */
+        .week-card { border-left: 4px solid #6366f1; transition: transform 0.2s; }
+        .week-card:hover { transform: translateX(5px); }
+        .week-active { border-left-color: #10b981; background-color: #f0fdf4; }
     </style>
 </head>
 <body class="pb-12">
@@ -33,7 +43,7 @@
                 <button type="submit" id="login-btn" class="btn-primary w-full mt-4">Войти</button>
                 <p id="login-error" class="text-rose-500 text-sm text-center hidden">Неверный логин или пароль</p>
             </form>
-            <p class="text-xs text-slate-400 mt-4 text-center">Если вы используете GitHub Pages, убедитесь, что создали пользователя в консоли Firebase.</p>
+            <p class="text-xs text-slate-400 mt-4 text-center">Используйте данные, созданные в Firebase Console.</p>
         </div>
     </div>
 
@@ -44,10 +54,12 @@
                 <h1 class="text-3xl font-bold text-slate-900">Sleep Lab <span class="text-indigo-600">Secure</span> 🌙</h1>
                 <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-500 underline">Выйти</button>
             </div>
-            <nav class="flex bg-white rounded-xl shadow-sm border p-1">
+            <nav class="flex bg-white rounded-xl shadow-sm border p-1 overflow-x-auto max-w-full">
                 <button onclick="switchTab('form')" id="tab-form" class="tab-btn active">Ввод</button>
                 <button onclick="switchTab('history')" id="tab-history" class="tab-btn">История</button>
                 <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn">Аналитика</button>
+                <button onclick="switchTab('hypotheses')" id="tab-hypotheses" class="tab-btn">Гипотезы</button>
+                <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn">Расписание</button>
             </nav>
         </header>
 
@@ -68,7 +80,6 @@
                         <input type="number" id="input-energy" class="input-field" value="1" min="0">
                     </div>
 
-                    <!-- Основные метрики браслета -->
                     <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-600">Заснула</label>
@@ -98,15 +109,25 @@
                         </div>
                     </div>
 
-                    <div class="md:col-span-3 flex flex-wrap gap-6 py-2">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="input-migraine" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="ml-2 text-sm font-medium text-slate-700">⚠️ Мигрень</span>
-                        </label>
-                        <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="input-rule20" class="w-4 h-4 text-indigo-600 rounded">
-                            <span class="ml-2 text-sm font-medium text-slate-700">✅ Правило 20 мин</span>
-                        </label>
+                    <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 py-2 border-t pt-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">💊 Амитриптилин (15:00)</label>
+                            <select id="input-amitriptyline" class="input-field">
+                                <option value="Вовремя">✅ Вовремя</option>
+                                <option value="Позже">⏳ Позже</option>
+                                <option value="Пропустила">❌ Пропустила</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-6 h-full mt-4 md:mt-0">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="input-migraine" class="w-4 h-4 text-indigo-600 rounded">
+                                <span class="ml-2 text-sm font-medium text-slate-700">⚠️ Мигрень</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="input-rule20" class="w-4 h-4 text-indigo-600 rounded">
+                                <span class="ml-2 text-sm font-medium text-slate-700">✅ Правило 20 мин</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="md:col-span-3">
@@ -123,8 +144,9 @@
                     <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
                             <th class="p-4 text-xs font-bold uppercase text-slate-500">Дата</th>
+                            <th class="p-4 text-xs font-bold uppercase text-slate-500">💊</th>
                             <th class="p-4 text-xs font-bold uppercase text-slate-500">Баллы</th>
-                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Сон (Всего)</th>
+                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Всего сна</th>
                             <th class="p-4 text-xs font-bold uppercase text-slate-500">Глубокий %</th>
                             <th class="p-4 text-xs font-bold uppercase text-slate-500">Пробужд.</th>
                             <th class="p-4 text-xs font-bold uppercase text-slate-500">Мигрень</th>
@@ -138,8 +160,148 @@
         <!-- VIEW: STATS -->
         <section id="view-stats" class="hidden space-y-6">
             <div class="card p-6">
-                <h3 class="font-bold text-slate-800 mb-4">Тренд качества сна (Баллы)</h3>
+                <h3 class="font-bold text-slate-800 mb-4 text-center">Тренд качества сна (Баллы)</h3>
                 <canvas id="chart-main" height="120"></canvas>
+            </div>
+        </section>
+
+        <!-- VIEW: HYPOTHESES -->
+        <section id="view-hypotheses" class="hidden space-y-6">
+            <div class="grid grid-cols-1 gap-4">
+                <div class="card p-6 bg-rose-50 border-rose-100">
+                    <h3 class="font-bold text-rose-800 text-lg mb-4 flex items-center">
+                        <span class="mr-2">🔴</span> Уровень 1: Критические факторы
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-high">
+                            <h4 class="font-bold text-slate-800">Циркадный ритм</h4>
+                            <p class="text-sm text-slate-600">Подъем строго в 06:00 (выходные до 07:00). Фундамент эксперимента.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-high">
+                            <h4 class="font-bold text-slate-800">Амитриптилин в 15:00</h4>
+                            <p class="text-sm text-slate-600">«Фармакологический мост» для совы, чтобы уснуть к 22:00.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-high">
+                            <h4 class="font-bold text-slate-800">Отказ от 2-го энергетика</h4>
+                            <p class="text-sm text-slate-600">Блокировка лишнего кофеина после 12:00.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-high">
+                            <h4 class="font-bold text-slate-800">Лайтбокс</h4>
+                            <p class="text-sm text-slate-600">Утренний свет для блокировки мелатонина.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6 bg-amber-50 border-amber-100">
+                    <h3 class="font-bold text-amber-800 text-lg mb-4 flex items-center">
+                        <span class="mr-2">🟡</span> Уровень 2: Высокая значимость
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-med">
+                            <h4 class="font-bold text-slate-800">Магний</h4>
+                            <p class="text-sm text-slate-600">Расслабление мышц шеи и профилактика мигрени.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-med">
+                            <h4 class="font-bold text-slate-800">E-ink чтение</h4>
+                            <p class="text-sm text-slate-600">Замена телефона на книгу перед сном.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-med">
+                            <h4 class="font-bold text-slate-800">Холод + Дыхание</h4>
+                            <p class="text-sm text-slate-600">Физиологическая кнопка «Стоп» для нервной системы.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6 bg-emerald-50 border-emerald-100">
+                    <h3 class="font-bold text-emerald-800 text-lg mb-4 flex items-center">
+                        <span class="mr-2">🟢</span> Уровень 3: Вспомогательные
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-low">
+                            <h4 class="font-bold text-slate-800">Чай</h4>
+                            <p class="text-sm text-slate-600">Ритуал успокоения.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-low">
+                            <h4 class="font-bold text-slate-800">Мозаика</h4>
+                            <p class="text-sm text-slate-600">Творческая разгрузка.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm priority-low">
+                            <h4 class="font-bold text-slate-800">Чтение</h4>
+                            <p class="text-sm text-slate-600">Успокаивающее чтение бумажной/e-ink книги.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: SCHEDULE -->
+        <section id="view-schedule" class="hidden space-y-6">
+            <div class="grid grid-cols-1 gap-4">
+                <div id="week-1" class="week-card card p-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 1</span>
+                            <h3 class="text-xl font-bold text-slate-800">Чистая синхронизация</h3>
+                            <p class="text-sm text-slate-500">4 марта – 10 марта</p>
+                        </div>
+                        <div class="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded">START</div>
+                    </div>
+                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center"><span class="mr-2">🕒</span> Подъем строго в 06:00 (вых. 07:00)</li>
+                        <li class="flex items-center"><span class="mr-2">💊</span> Амитриптилин строго в 15:00</li>
+                        <li class="flex items-center"><span class="mr-2">☕</span> Можно до 2-х энергетиков (до 15:00)</li>
+                    </ul>
+                </div>
+
+                <div id="week-2" class="week-card card p-6">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 2</span>
+                        <h3 class="text-xl font-bold text-slate-800">Свет и Детокс</h3>
+                        <p class="text-sm text-slate-500">11 марта – 17 марта</p>
+                    </div>
+                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center"><span class="mr-2">💡</span> Ввод лайтбокса утром (15-30 мин)</li>
+                        <li class="flex items-center"><span class="mr-2">🥤</span> Строго 1 энергетик (до 12:00)</li>
+                        <li class="flex items-center"><span class="mr-2">🍇</span> Второй — лимонад (Барбарис + Клюква)</li>
+                    </ul>
+                </div>
+
+                <div id="week-3" class="week-card card p-6">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 3</span>
+                        <h3 class="text-xl font-bold text-slate-800">Изоляция: Магний</h3>
+                        <p class="text-sm text-slate-500">18 марта – 24 марта</p>
+                    </div>
+                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center"><span class="mr-2">💊</span> Добавляем Магний в 20:00</li>
+                        <li class="flex items-center"><span class="mr-2">📊</span> Анализируем влияние на глубокий сон</li>
+                    </ul>
+                </div>
+
+                <div id="week-4" class="week-card card p-6">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 4</span>
+                        <h3 class="text-xl font-bold text-slate-800">Синергия: Физиология</h3>
+                        <p class="text-sm text-slate-500">25 марта – 31 марта</p>
+                    </div>
+                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center"><span class="mr-2">🍵</span> 21:00 — Успокаивающий чай</li>
+                        <li class="flex items-center"><span class="mr-2">❄️</span> 21:40 — Холод на лицо</li>
+                        <li class="flex items-center"><span class="mr-2">🧘</span> 21:50 — Дыхание 4-7-8 в постели</li>
+                    </ul>
+                </div>
+
+                <div id="week-5" class="week-card card p-6">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 5</span>
+                        <h3 class="text-xl font-bold text-slate-800">Когнитивная разгрузка: Ритуалы</h3>
+                        <p class="text-sm text-slate-500">1 апреля – 7 апреля</p>
+                    </div>
+                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
+                        <li class="flex items-center"><span class="mr-2">🧩</span> 21:00 — Алмазная мозаика (без гаджетов)</li>
+                        <li class="flex items-center"><span class="mr-2">📖</span> 21:45 — Чтение (желтый свет)</li>
+                    </ul>
+                </div>
             </div>
         </section>
     </div>
@@ -149,8 +311,6 @@
         import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- Firebase Configuration ---
-        // Dynamically use environment config if available, otherwise fall back to user-provided config
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config) 
             : {
@@ -171,14 +331,10 @@
         let sleepData = [];
         let chart = null;
 
-        // AUTH INITIALIZATION
         async function attemptAutoAuth() {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                try {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } catch (e) {
-                    console.error("Auto-auth failed, showing login screen");
-                }
+                try { await signInWithCustomToken(auth, __initial_auth_token); } 
+                catch (e) { console.error("Auto-auth failed"); }
             }
         }
 
@@ -187,6 +343,7 @@
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 syncData();
+                highlightCurrentWeek();
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('main-content').classList.add('hidden');
@@ -194,52 +351,57 @@
             }
         });
 
-        // LOGIN FUNCTION
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            const btn = document.getElementById('login-btn');
-            const errorEl = document.getElementById('login-error');
-            
-            btn.disabled = true;
-            btn.innerText = "Вход...";
-            errorEl.classList.add('hidden');
-
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } catch (err) {
-                errorEl.classList.remove('hidden');
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Войти";
-            }
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (err) { document.getElementById('login-error').classList.remove('hidden'); }
         };
 
         window.logout = () => signOut(auth);
 
         function syncData() {
             if (!auth.currentUser) return;
-            // RULE 1: Strict Paths
             const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
             onSnapshot(logsRef, (snapshot) => {
                 sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(b.date) - new Date(a.date));
                 updateUI();
-            }, (error) => {
-                console.error("Firestore sync error:", error);
             });
         }
 
         window.switchTab = (tab) => {
-            ['form', 'history', 'stats'].forEach(t => document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab));
-            ['tab-form', 'tab-history', 'tab-stats'].forEach(t => document.getElementById(t).classList.toggle('active', t === `tab-${tab}`));
+            ['form', 'history', 'stats', 'hypotheses', 'schedule'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
+                document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+            });
             if (tab === 'stats') renderChart();
         };
 
+        function highlightCurrentWeek() {
+            const today = new Date();
+            const schedules = [
+                { id: 'week-1', start: new Date('2026-03-04'), end: new Date('2026-03-10') },
+                { id: 'week-2', start: new Date('2026-03-11'), end: new Date('2026-03-17') },
+                { id: 'week-3', start: new Date('2026-03-18'), end: new Date('2026-03-24') },
+                { id: 'week-4', start: new Date('2026-03-25'), end: new Date('2026-03-31') },
+                { id: 'week-5', start: new Date('2026-04-01'), end: new Date('2026-04-07') }
+            ];
+
+            schedules.forEach(week => {
+                const el = document.getElementById(week.id);
+                if (today >= week.start && today <= week.end) {
+                    el.classList.add('week-active');
+                    // Prevent duplicate tags if switched tabs
+                    if (!el.querySelector('.current-tag')) {
+                        el.insertAdjacentHTML('afterbegin', '<div class="current-tag text-[10px] font-bold text-green-600 mb-1">ТЕКУЩАЯ НЕДЕЛЯ</div>');
+                    }
+                }
+            });
+        }
+
         document.getElementById('sleep-form').onsubmit = async (e) => {
             e.preventDefault();
-            if (!auth.currentUser) return;
-
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerText = "Сохранение...";
@@ -256,18 +418,15 @@
                 migraine: document.getElementById('input-migraine').checked,
                 rule20: document.getElementById('input-rule20').checked,
                 sleepAt: document.getElementById('input-sleep-at').value || "--:--",
+                amitriptyline: document.getElementById('input-amitriptyline').value,
                 updatedAt: new Date().toISOString()
             };
-
             try {
-                // RULE 1: Strict Paths
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'logs', date);
                 await setDoc(docRef, entry);
                 alert("Данные синхронизированы!");
-            } catch (err) {
-                console.error("Save error:", err);
-                alert("Ошибка доступа. Убедитесь, что вы авторизованы.");
-            } finally {
+            } catch (err) { alert("Ошибка сохранения."); }
+            finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Сохранить в облако";
             }
@@ -275,16 +434,19 @@
 
         function updateUI() {
             const body = document.getElementById('history-body');
-            body.innerHTML = sleepData.map(d => `
+            body.innerHTML = sleepData.map(d => {
+                const amitIcon = d.amitriptyline === 'Вовремя' ? '✅' : (d.amitriptyline === 'Позже' ? '⏳' : '❌');
+                return `
                 <tr class="hover:bg-slate-50 transition">
                     <td class="p-4 text-sm font-medium text-slate-700">${new Date(d.date).toLocaleDateString('ru-RU')}</td>
+                    <td class="p-4 text-sm" title="${d.amitriptyline || 'Не указано'}">${amitIcon}</td>
                     <td class="p-4 text-sm"><span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded font-bold">${d.score || 0}</span></td>
                     <td class="p-4 text-sm text-slate-600">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
                     <td class="p-4 text-sm text-slate-600">${d.deep}%</td>
                     <td class="p-4 text-sm text-slate-600">${d.awakenings || 0}</td>
                     <td class="p-4 text-sm">${d.migraine ? '<span class="text-rose-500 font-bold">⚠️ Да</span>' : 'Нет'}</td>
                 </tr>
-            `).join('');
+            `;}).join('');
         }
 
         function renderChart() {
@@ -310,7 +472,6 @@
                 }
             });
         }
-
         document.getElementById('input-date').valueAsDate = new Date();
     </script>
 </body>
