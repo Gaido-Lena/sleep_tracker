@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleep Tracker & Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f1f5f9; color: #1e293b; font-family: sans-serif; }
+        .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .input-field { width: 100%; padding: 0.6rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; margin-top: 0.25rem; }
+        .btn-indigo { background-color: #6366f1; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; }
+        .btn-indigo:hover { background-color: #4f46e5; }
+        .tab-btn { padding: 0.5rem 1rem; font-weight: 600; border-bottom: 2px solid transparent; }
+        .tab-btn.active { border-color: #6366f1; color: #6366f1; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-indigo-900">Sleep Dashboard 🌙</h1>
+                <p class="text-slate-500">Эксперимент: Сова в 6 утра</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="switchTab('form')" id="tabForm" class="tab-btn active">Ввод данных</button>
+                <button onclick="switchTab('stats')" id="tabStats" class="tab-btn">Аналитика</button>
+            </div>
+        </header>
+
+        <!-- ВКЛАДКА: ФОРМА -->
+        <div id="sectionForm" class="space-y-6">
+            <div class="card p-6">
+                <form id="sleepForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Дата</label>
+                        <input type="date" id="date" class="input-field" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Подъем (06:00?)</label>
+                        <input type="time" id="wakeTime" class="input-field" value="06:00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Источник света</label>
+                        <select id="lightSource" class="input-field">
+                            <option value="Кухня">Кухня (яркий свет)</option>
+                            <option value="Лампа">Лайтбокс (лампа)</option>
+                            <option value="Нет">Без спец. света</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Энергетики (шт)</label>
+                        <input type="number" id="energyDrinks" class="input-field" value="1" min="0">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Заснула (браслет)</label>
+                        <input type="time" id="sleepTime" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Глубокий сон (%)</label>
+                        <input type="number" id="deepSleep" class="input-field" placeholder="Напр: 22">
+                    </div>
+                    
+                    <!-- НОВОЕ: ОБЩЕЕ КОЛИЧЕСТВО СНА -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-slate-700">Всего сна (по браслету)</label>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <input type="number" id="totalHours" class="input-field" placeholder="Часов" min="0" max="24">
+                            </div>
+                            <div class="flex-1">
+                                <input type="number" id="totalMinutes" class="input-field" placeholder="Минут" min="0" max="59">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2 flex gap-6">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" id="migraine" class="rounded border-gray-300 text-indigo-600">
+                            <span class="ml-2 text-sm text-slate-700">⚠️ Мигрень</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" id="rule20" class="rounded border-gray-300 text-indigo-600">
+                            <span class="ml-2 text-sm text-slate-700">✅ Правило 20 мин</span>
+                        </label>
+                    </div>
+                    <div class="md:col-span-2">
+                        <textarea id="comment" rows="2" class="input-field" placeholder="Комментарий..."></textarea>
+                    </div>
+                    <div class="md:col-span-2 flex gap-4">
+                        <button type="button" onclick="saveEntry()" class="btn-indigo flex-1">Сохранить запись</button>
+                        <button type="button" onclick="copyFullTable()" class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg font-bold hover:bg-emerald-200">Копировать таблицу для Obsidian</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="font-bold text-slate-800 mb-4 text-lg">Последние записи</h3>
+                <div id="logHistory" class="space-y-2 max-h-60 overflow-y-auto">
+                    <!-- Записи появятся здесь -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА: СТАТИСТИКА -->
+        <div id="sectionStats" class="hidden space-y-6">
+            <div class="card p-6">
+                <h3 class="font-bold text-slate-800 mb-4">Динамика глубокого сна (%)</h3>
+                <canvas id="deepSleepChart" height="150"></canvas>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card p-6 text-center">
+                    <p class="text-xs text-slate-500 uppercase font-bold">Ср. Глубокий сон</p>
+                    <p id="avgDeep" class="text-3xl font-bold text-indigo-600">0%</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <p class="text-xs text-slate-500 uppercase font-bold">Ср. Время сна</p>
+                    <p id="avgTotal" class="text-3xl font-bold text-emerald-600">0ч 0м</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <p class="text-xs text-slate-500 uppercase font-bold">Дней с мигренью</p>
+                    <p id="migraineCount" class="text-3xl font-bold text-rose-500">0</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <p class="text-xs text-slate-500 uppercase font-bold">Всего логов</p>
+                    <p id="totalLogs" class="text-3xl font-bold text-slate-700">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db = JSON.parse(localStorage.getItem('sleep_tracker_db') || '[]');
+        let chartInstance = null;
+
+        document.getElementById('date').valueAsDate = new Date();
+
+        function switchTab(tab) {
+            document.getElementById('sectionForm').classList.toggle('hidden', tab !== 'form');
+            document.getElementById('sectionStats').classList.toggle('hidden', tab !== 'stats');
+            document.getElementById('tabForm').classList.toggle('active', tab === 'form');
+            document.getElementById('tabStats').classList.toggle('active', tab === 'stats');
+            if (tab === 'stats') updateDashboard();
+        }
+
+        function saveEntry() {
+            const h = document.getElementById('totalHours').value || 0;
+            const m = document.getElementById('totalMinutes').value || 0;
+            
+            const entry = {
+                date: document.getElementById('date').value,
+                wake: document.getElementById('wakeTime').value,
+                light: document.getElementById('lightSource').value,
+                energy: document.getElementById('energyDrinks').value,
+                sleep: document.getElementById('sleepTime').value || '--:--',
+                deep: parseInt(document.getElementById('deepSleep').value) || 0,
+                total: parseInt(h) * 60 + parseInt(m), // Храним в минутах
+                migraine: document.getElementById('migraine').checked,
+                rule20: document.getElementById('rule20').checked,
+                comment: document.getElementById('comment').value || '-'
+            };
+
+            db = db.filter(item => item.date !== entry.date); 
+            db.push(entry);
+            db.sort((a, b) => new Date(b.date) - new Date(a.date));
+            localStorage.setItem('sleep_tracker_db', JSON.stringify(db));
+            
+            renderHistory();
+            alert('Запись сохранена!');
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('logHistory');
+            list.innerHTML = db.slice(0, 10).map(item => {
+                const hh = Math.floor(item.total / 60);
+                const mm = item.total % 60;
+                return `
+                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <span><strong>${formatDate(item.date)}</strong> — ${hh}ч ${mm}м (Глубокий: ${item.deep}%)</span>
+                    <span class="text-xs text-slate-400">${item.migraine ? '⚠️' : ''} ${item.rule20 ? '✅' : ''}</span>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) + ' (' + d.toLocaleDateString('ru-RU', { weekday: 'short' }) + ')';
+        }
+
+        function copyFullTable() {
+            let table = "| Дата | Подъем | Свет | Энерг. | Заснула | Всего сна | Глубокий % | Мигрень | Пр. 20 мин | Коммент |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n";
+            db.slice().reverse().forEach(item => {
+                const hh = Math.floor(item.total / 60);
+                const mm = item.total % 60;
+                table += `| ${formatDate(item.date)} | ${item.wake} | ${item.light} | ${item.energy} | ${item.sleep} | ${hh}ч ${mm}м | ${item.deep}% | ${item.migraine ? '⚠️ Да' : 'Нет'} | ${item.rule20 ? '✅ Да' : 'Нет'} | ${item.comment} |\n`;
+            });
+            
+            const tempInput = document.createElement("textarea");
+            tempInput.value = table;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert('Таблица для Obsidian скопирована!');
+        }
+
+        function updateDashboard() {
+            const sortedDb = db.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+            const labels = sortedDb.map(item => formatDate(item.date));
+            const deepData = sortedDb.map(item => item.deep);
+
+            document.getElementById('totalLogs').innerText = db.length;
+            document.getElementById('migraineCount').innerText = db.filter(i => i.migraine).length;
+            
+            const avgDeep = db.length ? (db.reduce((acc, i) => acc + i.deep, 0) / db.length).toFixed(1) : 0;
+            document.getElementById('avgDeep').innerText = avgDeep + '%';
+
+            const avgTotalMin = db.length ? (db.reduce((acc, i) => acc + i.total, 0) / db.length) : 0;
+            const avgH = Math.floor(avgTotalMin / 60);
+            const avgM = Math.round(avgTotalMin % 60);
+            document.getElementById('avgTotal').innerText = `${avgH}ч ${avgM}м`;
+
+            if (chartInstance) chartInstance.destroy();
+
+            const ctx = document.getElementById('deepSleepChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Глубокий сон (%)',
+                        data: deepData,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { min: 0, max: 100 } }
+                }
+            });
+        }
+
+        window.onload = renderHistory;
+    </script>
+    <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDaYnBz2Bdv-nqETKlIQaKid_umHgr_2N0",
+    authDomain: "sleeptracker-5962d.firebaseapp.com",
+    projectId: "sleeptracker-5962d",
+    storageBucket: "sleeptracker-5962d.firebasestorage.app",
+    messagingSenderId: "801320667080",
+    appId: "1:801320667080:web:ec5e994bcedc1ba24ca2fd",
+    measurementId: "G-NNMGKSTYG8"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+</body>
+</html>
