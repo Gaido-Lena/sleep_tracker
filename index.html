@@ -13,17 +13,18 @@
         .btn-primary { background-color: #6366f1; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; }
         .tab-btn { padding: 0.75rem 1rem; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
         .tab-btn.active { color: #6366f1; border-color: #6366f1; }
+        .ref-hint { font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem; display: block; }
         .hidden { display: none !important; }
         
-        /* Стили для приоритетов гипотез */
         .priority-high { border-left: 4px solid #ef4444; }
         .priority-med { border-left: 4px solid #f59e0b; }
         .priority-low { border-left: 4px solid #10b981; }
 
-        /* Стили для расписания */
-        .week-card { border-left: 4px solid #6366f1; transition: transform 0.2s; }
-        .week-card:hover { transform: translateX(5px); }
-        .week-active { border-left-color: #10b981; background-color: #f0fdf4; }
+        .week-card { border-left: 4px solid #e2e8f0; transition: all 0.3s ease; }
+        .week-active { border-left: 6px solid #10b981 !important; background-color: #f0fdf4; transform: scale(1.01); }
+        .week-title { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
+        .check-item { display: flex; align-items: flex-start; margin-bottom: 0.5rem; font-size: 0.875rem; color: #475569; }
+        .check-icon { margin-right: 0.75rem; margin-top: 0.125rem; flex-shrink: 0; }
     </style>
 </head>
 <body class="pb-12">
@@ -43,7 +44,6 @@
                 <button type="submit" id="login-btn" class="btn-primary w-full mt-4">Войти</button>
                 <p id="login-error" class="text-rose-500 text-sm text-center hidden">Неверный логин или пароль</p>
             </form>
-            <p class="text-xs text-slate-400 mt-4 text-center">Используйте данные, созданные в Firebase Console.</p>
         </div>
     </div>
 
@@ -80,32 +80,46 @@
                         <input type="number" id="input-energy" class="input-field" value="1" min="0">
                     </div>
 
-                    <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4 border-t pt-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">Баллы сна</label>
+                            <input type="number" id="input-score" class="input-field" placeholder="0-100">
+                            <span class="ref-hint">Норма: 70-100</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">Глубокий %</label>
+                            <input type="number" id="input-deep-pct" class="input-field" placeholder="%">
+                            <span class="ref-hint">Норма: 20-60%</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">Глубокий (баллы)</label>
+                            <input type="number" id="input-deep-score" class="input-field" placeholder="0-100">
+                            <span class="ref-hint">Норма: 70-100</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">Качество дыхания</label>
+                            <input type="number" id="input-breath-score" class="input-field" placeholder="0-100">
+                            <span class="ref-hint">Норма: 90-100</span>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-600">Заснула</label>
                             <input type="time" id="input-sleep-at" class="input-field">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-600">Баллы сна</label>
-                            <input type="number" id="input-score" class="input-field" placeholder="0-100">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">Глубокий %</label>
-                            <input type="number" id="input-deep" class="input-field">
-                        </div>
-                        <div>
                             <label class="block text-sm font-semibold text-slate-600">Пробуждения</label>
                             <input type="number" id="input-awakenings" class="input-field" placeholder="Кол-во">
+                            <span class="ref-hint">Норма: 0-1</span>
                         </div>
-                        <div class="flex gap-2">
-                            <div class="flex-1">
-                                <label class="block text-sm font-semibold text-slate-600">Всего ч.</label>
-                                <input type="number" id="input-hours" class="input-field">
+                        <div class="col-span-2">
+                            <label class="block text-sm font-semibold text-slate-600">Всего сна (Huawei)</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="input-hours" class="input-field" placeholder="Часов">
+                                <input type="number" id="input-mins" class="input-field" placeholder="Мин.">
                             </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-semibold text-slate-600">мин.</label>
-                                <input type="number" id="input-mins" class="input-field">
-                            </div>
+                            <span class="ref-hint">Норма: 6-9 часов</span>
                         </div>
                     </div>
 
@@ -140,16 +154,18 @@
         <!-- VIEW: HISTORY -->
         <section id="view-history" class="hidden card overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
                     <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Дата</th>
-                            <th class="p-4 text-xs font-bold uppercase text-slate-500">💊</th>
-                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Баллы</th>
-                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Всего сна</th>
-                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Глубокий %</th>
-                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Пробужд.</th>
-                            <th class="p-4 text-xs font-bold uppercase text-slate-500">Мигрень</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Дата</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">💊</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Баллы</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Сон (6-9ч)</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Глуб.% (20-60)</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Глуб.б (70+)</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Дых. (90+)</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Проб. (0-1)</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Мигрень</th>
                         </tr>
                     </thead>
                     <tbody id="history-body" class="divide-y divide-slate-200"></tbody>
@@ -160,147 +176,109 @@
         <!-- VIEW: STATS -->
         <section id="view-stats" class="hidden space-y-6">
             <div class="card p-6">
-                <h3 class="font-bold text-slate-800 mb-4 text-center">Тренд качества сна (Баллы)</h3>
-                <canvas id="chart-main" height="120"></canvas>
+                <h3 class="font-bold text-slate-800 mb-4 text-center">Тренд качества сна с фазами эксперимента</h3>
+                <div class="relative h-[350px]">
+                    <canvas id="chart-main"></canvas>
+                </div>
             </div>
         </section>
 
         <!-- VIEW: HYPOTHESES -->
         <section id="view-hypotheses" class="hidden space-y-6">
             <div class="grid grid-cols-1 gap-4">
-                <div class="card p-6 bg-rose-50 border-rose-100">
-                    <h3 class="font-bold text-rose-800 text-lg mb-4 flex items-center">
-                        <span class="mr-2">🔴</span> Уровень 1: Критические факторы
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-high">
-                            <h4 class="font-bold text-slate-800">Циркадный ритм</h4>
-                            <p class="text-sm text-slate-600">Подъем строго в 06:00 (выходные до 07:00). Фундамент эксперимента.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-high">
-                            <h4 class="font-bold text-slate-800">Амитриптилин в 15:00</h4>
-                            <p class="text-sm text-slate-600">«Фармакологический мост» для совы, чтобы уснуть к 22:00.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-high">
-                            <h4 class="font-bold text-slate-800">Отказ от 2-го энергетика</h4>
-                            <p class="text-sm text-slate-600">Блокировка лишнего кофеина после 12:00.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-high">
-                            <h4 class="font-bold text-slate-800">Лайтбокс</h4>
-                            <p class="text-sm text-slate-600">Утренний свет для блокировки мелатонина.</p>
-                        </div>
-                    </div>
+                <div class="card p-6 bg-rose-50 border-rose-100 priority-high">
+                    <h3 class="font-bold text-rose-800 text-lg mb-2 flex items-center">🔴 Критические факторы</h3>
+                    <p class="text-sm text-slate-600">Подъем в 06:00, Амитриптилин 15:00, Отмена 2-го энергетика, Лайтбокс.</p>
                 </div>
-
-                <div class="card p-6 bg-amber-50 border-amber-100">
-                    <h3 class="font-bold text-amber-800 text-lg mb-4 flex items-center">
-                        <span class="mr-2">🟡</span> Уровень 2: Высокая значимость
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-med">
-                            <h4 class="font-bold text-slate-800">Магний</h4>
-                            <p class="text-sm text-slate-600">Расслабление мышц шеи и профилактика мигрени.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-med">
-                            <h4 class="font-bold text-slate-800">E-ink чтение</h4>
-                            <p class="text-sm text-slate-600">Замена телефона на книгу перед сном.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-med">
-                            <h4 class="font-bold text-slate-800">Холод + Дыхание</h4>
-                            <p class="text-sm text-slate-600">Физиологическая кнопка «Стоп» для нервной системы.</p>
-                        </div>
-                    </div>
+                <div class="card p-6 bg-amber-50 border-amber-100 priority-med">
+                    <h3 class="font-bold text-amber-800 text-lg mb-2 flex items-center">🟡 Высокая значимость</h3>
+                    <p class="text-sm text-slate-600">Магний 20:00, E-ink чтение, Холод + Дыхание.</p>
                 </div>
-
-                <div class="card p-6 bg-emerald-50 border-emerald-100">
-                    <h3 class="font-bold text-emerald-800 text-lg mb-4 flex items-center">
-                        <span class="mr-2">🟢</span> Уровень 3: Вспомогательные
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-low">
-                            <h4 class="font-bold text-slate-800">Чай</h4>
-                            <p class="text-sm text-slate-600">Ритуал успокоения.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-low">
-                            <h4 class="font-bold text-slate-800">Мозаика</h4>
-                            <p class="text-sm text-slate-600">Творческая разгрузка.</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-lg shadow-sm priority-low">
-                            <h4 class="font-bold text-slate-800">Чтение</h4>
-                            <p class="text-sm text-slate-600">Успокаивающее чтение бумажной/e-ink книги.</p>
-                        </div>
-                    </div>
+                <div class="card p-6 bg-emerald-50 border-emerald-100 priority-low">
+                    <h3 class="font-bold text-emerald-800 text-lg mb-2 flex items-center">🟢 Вспомогательные</h3>
+                    <p class="text-sm text-slate-600">Чай, Мозаика.</p>
                 </div>
             </div>
         </section>
 
         <!-- VIEW: SCHEDULE -->
-        <section id="view-schedule" class="hidden space-y-6">
-            <div class="grid grid-cols-1 gap-4">
-                <div id="week-1" class="week-card card p-6">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 1</span>
-                            <h3 class="text-xl font-bold text-slate-800">Чистая синхронизация</h3>
-                            <p class="text-sm text-slate-500">4 марта – 10 марта</p>
-                        </div>
-                        <div class="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded">START</div>
-                    </div>
-                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center"><span class="mr-2">🕒</span> Подъем строго в 06:00 (вых. 07:00)</li>
-                        <li class="flex items-center"><span class="mr-2">💊</span> Амитриптилин строго в 15:00</li>
-                        <li class="flex items-center"><span class="mr-2">☕</span> Можно до 2-х энергетиков (до 15:00)</li>
-                    </ul>
-                </div>
-
-                <div id="week-2" class="week-card card p-6">
+        <section id="view-schedule" class="hidden space-y-4">
+            <!-- WEEK 1 -->
+            <div id="week-1" class="week-card card p-6">
+                <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 2</span>
-                        <h3 class="text-xl font-bold text-slate-800">Свет и Детокс</h3>
-                        <p class="text-sm text-slate-500">11 марта – 17 марта</p>
+                        <span class="text-xs font-bold text-rose-500 uppercase tracking-wider">Неделя 1</span>
+                        <h2 class="text-xl font-bold text-slate-800">Чистая синхронизация</h2>
+                        <p class="text-sm text-slate-500 italic">4 марта – 10 марта</p>
                     </div>
-                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center"><span class="mr-2">💡</span> Ввод лайтбокса утром (15-30 мин)</li>
-                        <li class="flex items-center"><span class="mr-2">🥤</span> Строго 1 энергетик (до 12:00)</li>
-                        <li class="flex items-center"><span class="mr-2">🍇</span> Второй — лимонад (Барбарис + Клюква)</li>
-                    </ul>
                 </div>
-
-                <div id="week-3" class="week-card card p-6">
-                    <div>
-                        <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 3</span>
-                        <h3 class="text-xl font-bold text-slate-800">Изоляция: Магний</h3>
-                        <p class="text-sm text-slate-500">18 марта – 24 марта</p>
-                    </div>
-                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center"><span class="mr-2">💊</span> Добавляем Магний в 20:00</li>
-                        <li class="flex items-center"><span class="mr-2">📊</span> Анализируем влияние на глубокий сон</li>
-                    </ul>
+                <div class="space-y-3">
+                    <div class="check-item"><span class="check-icon">⏰</span> <span><strong>Строгий подъем:</strong> 06:00 (будни), до 07:00 (выходные). Без "доспать".</span></div>
+                    <div class="check-item"><span class="check-icon">💊</span> <span><strong>Амитриптилин:</strong> Строго в 15:00, чтобы пик сонливости пришелся на 22:00.</span></div>
+                    <div class="check-item"><span class="check-icon">🥤</span> <span><strong>Кофеин:</strong> Допускается 2 энергетика, но второй строго до 15:00.</span></div>
+                    <div class="check-item"><span class="check-icon">🚫</span> <span><strong>Свет:</strong> Пока без лайтбокса. Обычное освещение кухни.</span></div>
                 </div>
+            </div>
 
-                <div id="week-4" class="week-card card p-6">
+            <!-- WEEK 2 -->
+            <div id="week-2" class="week-card card p-6">
+                <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 4</span>
-                        <h3 class="text-xl font-bold text-slate-800">Синергия: Физиология</h3>
-                        <p class="text-sm text-slate-500">25 марта – 31 марта</p>
+                        <span class="text-xs font-bold text-amber-500 uppercase tracking-wider">Неделя 2</span>
+                        <h2 class="text-xl font-bold text-slate-800">Свет и Детокс</h2>
+                        <p class="text-sm text-slate-500 italic">11 марта – 17 марта</p>
                     </div>
-                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center"><span class="mr-2">🍵</span> 21:00 — Успокаивающий чай</li>
-                        <li class="flex items-center"><span class="mr-2">❄️</span> 21:40 — Холод на лицо</li>
-                        <li class="flex items-center"><span class="mr-2">🧘</span> 21:50 — Дыхание 4-7-8 в постели</li>
-                    </ul>
                 </div>
+                <div class="space-y-3">
+                    <div class="check-item"><span class="check-icon">💡</span> <span><strong>Лайтбокс:</strong> Использовать сразу после пробуждения (15-30 минут) для блокировки мелатонина.</span></div>
+                    <div class="check-item"><span class="check-icon">🍃</span> <span><strong>Детокс кофеина:</strong> Сокращаем до 1 энергетика (до 12:00).</span></div>
+                    <div class="check-item"><span class="check-icon">🥤</span> <span><strong>Замена:</strong> Вместо 2-го энергетика — домашний лимонад (Барбарис + Клюква) в сифоне.</span></div>
+                </div>
+            </div>
 
-                <div id="week-5" class="week-card card p-6">
+            <!-- WEEK 3 -->
+            <div id="week-3" class="week-card card p-6">
+                <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-indigo-500 uppercase">Неделя 5</span>
-                        <h3 class="text-xl font-bold text-slate-800">Когнитивная разгрузка: Ритуалы</h3>
-                        <p class="text-sm text-slate-500">1 апреля – 7 апреля</p>
+                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider">Неделя 3</span>
+                        <h2 class="text-xl font-bold text-slate-800">Изоляция: Магний</h2>
+                        <p class="text-sm text-slate-500 italic">18 марта – 24 марта</p>
                     </div>
-                    <ul class="mt-4 space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center"><span class="mr-2">🧩</span> 21:00 — Алмазная мозаика (без гаджетов)</li>
-                        <li class="flex items-center"><span class="mr-2">📖</span> 21:45 — Чтение (желтый свет)</li>
-                    </ul>
+                </div>
+                <div class="space-y-3">
+                    <div class="check-item"><span class="check-icon">💊</span> <span><strong>Магний:</strong> Прием в 20:00 (за 2 часа до сна). Снятие мышечных зажимов шеи.</span></div>
+                    <div class="check-item"><span class="check-icon">📈</span> <span><strong>Анализ:</strong> Смотрим на "Баллы глубокого сна". Должны начать расти.</span></div>
+                </div>
+            </div>
+
+            <!-- WEEK 4 -->
+            <div id="week-4" class="week-card card p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider">Неделя 4</span>
+                        <h2 class="text-xl font-bold text-slate-800">Синергия: Физиология</h2>
+                        <p class="text-sm text-slate-500 italic">25 марта – 31 марта</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="check-item"><span class="check-icon">🍵</span> <span><strong>21:00 Чай:</strong> Успокаивающий травяной сбор без сахара.</span></div>
+                    <div class="check-item"><span class="check-icon">❄️</span> <span><strong>21:40 Холод:</strong> Холодное полотенце или маска на лицо (активация блуждающего нерва).</span></div>
+                    <div class="check-item"><span class="check-icon">🧘</span> <span><strong>21:50 Дыхание:</strong> Техника «4-7-8» уже в постели для снятия тревожности.</span></div>
+                </div>
+            </div>
+
+            <!-- WEEK 5 -->
+            <div id="week-5" class="week-card card p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="text-xs font-bold text-purple-500 uppercase tracking-wider">Неделя 5</span>
+                        <h2 class="text-xl font-bold text-slate-800">Когнитивная разгрузка</h2>
+                        <p class="text-sm text-slate-500 italic">1 апреля – 7 апреля</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="check-item"><span class="check-icon">🧩</span> <span><strong>21:00 Мозаика:</strong> Работа над алмазной мозаикой при мягком свете. Никаких экранов!</span></div>
+                    <div class="check-item"><span class="check-icon">📖</span> <span><strong>21:45 Чтение:</strong> E-ink книга или бумажная книга с желтой подсветкой как финальный сигнал мозгу.</span></div>
                 </div>
             </div>
         </section>
@@ -331,12 +309,13 @@
         let sleepData = [];
         let chart = null;
 
-        async function attemptAutoAuth() {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                try { await signInWithCustomToken(auth, __initial_auth_token); } 
-                catch (e) { console.error("Auto-auth failed"); }
-            }
-        }
+        const phases = [
+            { name: 'Неделя 1', start: '2026-03-04', end: '2026-03-10', color: 'rgba(239, 68, 68, 0.04)' },
+            { name: 'Неделя 2', start: '2026-03-11', end: '2026-03-17', color: 'rgba(245, 158, 11, 0.04)' },
+            { name: 'Неделя 3', start: '2026-03-18', end: '2026-03-24', color: 'rgba(16, 185, 129, 0.04)' },
+            { name: 'Неделя 4', start: '2026-03-25', end: '2026-03-31', color: 'rgba(59, 130, 246, 0.04)' },
+            { name: 'Неделя 5', start: '2026-04-01', end: '2026-04-07', color: 'rgba(139, 92, 246, 0.04)' }
+        ];
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -345,28 +324,28 @@
                 syncData();
                 highlightCurrentWeek();
             } else {
-                document.getElementById('auth-screen').classList.remove('hidden');
-                document.getElementById('main-content').classList.add('hidden');
-                attemptAutoAuth();
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    signInWithCustomToken(auth, __initial_auth_token);
+                }
             }
         });
 
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); } 
             catch (err) { document.getElementById('login-error').classList.remove('hidden'); }
         };
 
         window.logout = () => signOut(auth);
 
         function syncData() {
-            if (!auth.currentUser) return;
             const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
             onSnapshot(logsRef, (snapshot) => {
-                sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(b.date) - new Date(a.date));
+                sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(a.date) - new Date(b.date));
                 updateUI();
+                if (!document.getElementById('view-stats').classList.contains('hidden')) {
+                    renderChart();
+                }
             });
         }
 
@@ -380,21 +359,12 @@
 
         function highlightCurrentWeek() {
             const today = new Date();
-            const schedules = [
-                { id: 'week-1', start: new Date('2026-03-04'), end: new Date('2026-03-10') },
-                { id: 'week-2', start: new Date('2026-03-11'), end: new Date('2026-03-17') },
-                { id: 'week-3', start: new Date('2026-03-18'), end: new Date('2026-03-24') },
-                { id: 'week-4', start: new Date('2026-03-25'), end: new Date('2026-03-31') },
-                { id: 'week-5', start: new Date('2026-04-01'), end: new Date('2026-04-07') }
-            ];
-
-            schedules.forEach(week => {
-                const el = document.getElementById(week.id);
-                if (today >= week.start && today <= week.end) {
+            phases.forEach((p, index) => {
+                const el = document.getElementById(`week-${index+1}`);
+                if (el && today >= new Date(p.start) && today <= new Date(p.end)) {
                     el.classList.add('week-active');
-                    // Prevent duplicate tags if switched tabs
-                    if (!el.querySelector('.current-tag')) {
-                        el.insertAdjacentHTML('afterbegin', '<div class="current-tag text-[10px] font-bold text-green-600 mb-1">ТЕКУЩАЯ НЕДЕЛЯ</div>');
+                    if (!el.querySelector('.current-badge')) {
+                        el.insertAdjacentHTML('afterbegin', '<div class="current-badge text-[10px] font-bold text-green-600 mb-1">ТЕКУЩАЯ НЕДЕЛЯ</div>');
                     }
                 }
             });
@@ -402,73 +372,116 @@
 
         document.getElementById('sleep-form').onsubmit = async (e) => {
             e.preventDefault();
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Сохранение...";
-
             const date = document.getElementById('input-date').value;
             const entry = {
                 date,
                 wake: document.getElementById('input-wake').value,
                 energy: parseInt(document.getElementById('input-energy').value) || 0,
                 score: parseInt(document.getElementById('input-score').value) || 0,
-                deep: parseInt(document.getElementById('input-deep').value) || 0,
+                deepPct: parseInt(document.getElementById('input-deep-pct').value) || 0,
+                deepScore: parseInt(document.getElementById('input-deep-score').value) || 0,
+                breathScore: parseInt(document.getElementById('input-breath-score').value) || 0,
                 awakenings: parseInt(document.getElementById('input-awakenings').value) || 0,
                 totalMinutes: (parseInt(document.getElementById('input-hours').value) || 0) * 60 + (parseInt(document.getElementById('input-mins').value) || 0),
                 migraine: document.getElementById('input-migraine').checked,
                 rule20: document.getElementById('input-rule20').checked,
-                sleepAt: document.getElementById('input-sleep-at').value || "--:--",
                 amitriptyline: document.getElementById('input-amitriptyline').value,
+                sleepAt: document.getElementById('input-sleep-at').value || "--:--",
                 updatedAt: new Date().toISOString()
             };
             try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'logs', date);
-                await setDoc(docRef, entry);
-                alert("Данные синхронизированы!");
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'logs', date), entry);
+                alert("Данные сохранены!");
             } catch (err) { alert("Ошибка сохранения."); }
-            finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Сохранить в облако";
-            }
         };
 
         function updateUI() {
             const body = document.getElementById('history-body');
-            body.innerHTML = sleepData.map(d => {
+            const displayData = [...sleepData].reverse();
+            body.innerHTML = displayData.map(d => {
                 const amitIcon = d.amitriptyline === 'Вовремя' ? '✅' : (d.amitriptyline === 'Позже' ? '⏳' : '❌');
+                const isSleepOk = d.totalMinutes >= 360 && d.totalMinutes <= 540;
+                const isDeepPctOk = d.deepPct >= 20 && d.deepPct <= 60;
+                const isDeepScoreOk = d.deepScore >= 70;
+                const isBreathOk = d.breathScore >= 90;
+                const isAwakeOk = d.awakenings <= 1;
+
                 return `
-                <tr class="hover:bg-slate-50 transition">
-                    <td class="p-4 text-sm font-medium text-slate-700">${new Date(d.date).toLocaleDateString('ru-RU')}</td>
-                    <td class="p-4 text-sm" title="${d.amitriptyline || 'Не указано'}">${amitIcon}</td>
-                    <td class="p-4 text-sm"><span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded font-bold">${d.score || 0}</span></td>
-                    <td class="p-4 text-sm text-slate-600">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
-                    <td class="p-4 text-sm text-slate-600">${d.deep}%</td>
-                    <td class="p-4 text-sm text-slate-600">${d.awakenings || 0}</td>
-                    <td class="p-4 text-sm">${d.migraine ? '<span class="text-rose-500 font-bold">⚠️ Да</span>' : 'Нет'}</td>
+                <tr class="hover:bg-slate-50 transition text-sm">
+                    <td class="p-4 font-medium text-slate-700">${new Date(d.date).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'})}</td>
+                    <td class="p-4" title="${d.amitriptyline}">${amitIcon}</td>
+                    <td class="p-4 font-bold text-indigo-600">${d.score || 0}</td>
+                    <td class="p-4 ${isSleepOk ? '' : 'text-amber-600 font-bold'}">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
+                    <td class="p-4 ${isDeepPctOk ? '' : 'text-amber-600'}">${d.deepPct}%</td>
+                    <td class="p-4 ${isDeepScoreOk ? '' : 'text-rose-500 font-bold'}">${d.deepScore || 0}</td>
+                    <td class="p-4 ${isBreathOk ? '' : 'text-rose-500 font-bold'}">${d.breathScore || 0}</td>
+                    <td class="p-4 ${isAwakeOk ? '' : 'text-rose-500 font-bold'}">${d.awakenings || 0}</td>
+                    <td class="p-4">${d.migraine ? '⚠️' : 'Нет'}</td>
                 </tr>
             `;}).join('');
         }
 
+        const phaseBackgroundPlugin = {
+            id: 'phaseBackground',
+            beforeDraw: (chart) => {
+                const { ctx, chartArea, scales: { x, y } } = chart;
+                phases.forEach(p => {
+                    const startPos = x.getPixelForValue(new Date(p.start).toLocaleDateString('ru-RU', {day:'numeric'}));
+                    const endPos = x.getPixelForValue(new Date(p.end).toLocaleDateString('ru-RU', {day:'numeric'}));
+                    
+                    if (!isNaN(startPos) && !isNaN(endPos)) {
+                        ctx.save();
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(startPos, chartArea.top, endPos - startPos, chartArea.bottom - chartArea.top);
+                        
+                        ctx.fillStyle = 'rgba(100, 116, 139, 0.4)';
+                        ctx.font = 'bold 9px sans-serif';
+                        ctx.fillText(p.name, startPos + 5, chartArea.top + 15);
+                        ctx.restore();
+                    }
+                });
+            }
+        };
+
         function renderChart() {
             const ctx = document.getElementById('chart-main').getContext('2d');
-            const sorted = [...sleepData].sort((a,b) => new Date(a.date) - new Date(b.date));
             if (chart) chart.destroy();
+            
+            const labels = sleepData.map(d => new Date(d.date).toLocaleDateString('ru-RU', {day:'numeric'}));
+            const scores = sleepData.map(d => d.score);
+
             chart = new Chart(ctx, {
                 type: 'line',
+                plugins: [phaseBackgroundPlugin],
                 data: {
-                    labels: sorted.map(d => new Date(d.date).toLocaleDateString('ru-RU', {day:'numeric', month:'short'})),
+                    labels: labels,
                     datasets: [{ 
                         label: 'Баллы сна', 
-                        data: sorted.map(d => d.score), 
+                        data: scores, 
                         borderColor: '#6366f1', 
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         fill: true,
-                        tension: 0.3 
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#6366f1'
                     }]
                 },
                 options: {
                     responsive: true,
-                    scales: { y: { min: 0, max: 100 } }
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            min: 0, 
+                            max: 100,
+                            ticks: { font: { size: 10 } }
+                        },
+                        x: {
+                            ticks: { font: { size: 10 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
             });
         }
