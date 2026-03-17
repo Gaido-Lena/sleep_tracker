@@ -22,7 +22,6 @@
 
         .week-card { border-left: 4px solid #e2e8f0; transition: all 0.3s ease; }
         .week-active { border-left: 6px solid #10b981 !important; background-color: #f0fdf4; transform: scale(1.01); }
-        .week-title { font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
         .check-item { display: flex; align-items: flex-start; margin-bottom: 0.5rem; font-size: 0.875rem; color: #475569; }
         .check-icon { margin-right: 0.75rem; margin-top: 0.125rem; flex-shrink: 0; }
     </style>
@@ -105,7 +104,7 @@
 
                     <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-slate-600">Заснула</label>
+                            <label class="block text-sm font-semibold text-slate-600">Заснула (браслет)</label>
                             <input type="time" id="input-sleep-at" class="input-field">
                         </div>
                         <div>
@@ -174,11 +173,30 @@
         </section>
 
         <!-- VIEW: STATS -->
-        <section id="view-stats" class="hidden space-y-6">
-            <div class="card p-6">
-                <h3 class="font-bold text-slate-800 mb-4 text-center">Тренд качества сна с фазами эксперимента</h3>
-                <div class="relative h-[350px]">
-                    <canvas id="chart-main"></canvas>
+        <section id="view-stats" class="hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- CHART: SLEEP AT -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-slate-800 mb-4 text-center">Время засыпания (Реф: 22:30)</h3>
+                    <div class="h-[250px]">
+                        <canvas id="chart-sleep-at"></canvas>
+                    </div>
+                </div>
+
+                <!-- CHART: SCORE -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-slate-800 mb-4 text-center">Баллы сна (Реф: 70+)</h3>
+                    <div class="h-[250px]">
+                        <canvas id="chart-score"></canvas>
+                    </div>
+                </div>
+
+                <!-- CHART: WAKE TIME -->
+                <div class="card p-6 lg:col-span-2">
+                    <h3 class="font-bold text-slate-800 mb-4 text-center">Время подъема (Реф: 06:00)</h3>
+                    <div class="h-[250px]">
+                        <canvas id="chart-wake-time"></canvas>
+                    </div>
                 </div>
             </div>
         </section>
@@ -192,7 +210,7 @@
                 </div>
                 <div class="card p-6 bg-amber-50 border-amber-100 priority-med">
                     <h3 class="font-bold text-amber-800 text-lg mb-2 flex items-center">🟡 Высокая значимость</h3>
-                    <p class="text-sm text-slate-600">Магний 20:00, E-ink чтение, Холод + Дыхание.</p>
+                    <p class="text-sm text-slate-600">Магний 20:00, E-ink чтение (30 мин), Холод + Дыхание.</p>
                 </div>
                 <div class="card p-6 bg-emerald-50 border-emerald-100 priority-low">
                     <h3 class="font-bold text-emerald-800 text-lg mb-2 flex items-center">🟢 Вспомогательные</h3>
@@ -204,35 +222,31 @@
         <!-- VIEW: SCHEDULE -->
         <section id="view-schedule" class="hidden space-y-4">
             <!-- WEEK 1 -->
-            <div id="week-1" class="week-card card p-6">
+            <div id="week-1" class="week-card card p-6 bg-slate-50 border-slate-300 opacity-75">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-rose-500 uppercase tracking-wider">Неделя 1</span>
-                        <h2 class="text-xl font-bold text-slate-800">Чистая синхронизация</h2>
-                        <p class="text-sm text-slate-500 italic">4 марта – 10 марта</p>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Неделя 1 (Завершена)</span>
+                        <h2 class="text-xl font-bold text-slate-400">Отпуск / Сбой режима</h2>
+                        <p class="text-sm text-slate-400 italic">4 марта – 15 марта</p>
                     </div>
+                    <div class="bg-slate-200 text-slate-500 text-[10px] font-bold px-2 py-1 rounded">FAILURE</div>
                 </div>
-                <div class="space-y-3">
-                    <div class="check-item"><span class="check-icon">⏰</span> <span><strong>Строгий подъем:</strong> 06:00 (будни), до 07:00 (выходные). Без "доспать".</span></div>
-                    <div class="check-item"><span class="check-icon">💊</span> <span><strong>Амитриптилин:</strong> Строго в 15:00, чтобы пик сонливости пришелся на 22:00.</span></div>
-                    <div class="check-item"><span class="check-icon">🥤</span> <span><strong>Кофеин:</strong> Допускается 2 энергетика, но второй строго до 15:00.</span></div>
-                    <div class="check-item"><span class="check-icon">🚫</span> <span><strong>Свет:</strong> Пока без лайтбокса. Обычное освещение кухни.</span></div>
-                </div>
+                <p class="text-sm text-slate-400">Эксперимент пошел не по плану из-за отпуска. Данные считаются фоновыми.</p>
             </div>
 
-            <!-- WEEK 2 -->
+            <!-- WEEK 2 REVISED -->
             <div id="week-2" class="week-card card p-6">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-amber-500 uppercase tracking-wider">Неделя 2</span>
-                        <h2 class="text-xl font-bold text-slate-800">Свет и Детокс</h2>
-                        <p class="text-sm text-slate-500 italic">11 марта – 17 марта</p>
+                        <span class="text-xs font-bold text-rose-500 uppercase tracking-wider">Неделя 2 (Рестарт)</span>
+                        <h2 class="text-xl font-bold text-slate-800">Чистый фокус: Кофеин + Чтение</h2>
+                        <p class="text-sm text-slate-500 italic">16 марта – 22 марта</p>
                     </div>
                 </div>
                 <div class="space-y-3">
-                    <div class="check-item"><span class="check-icon">💡</span> <span><strong>Лайтбокс:</strong> Использовать сразу после пробуждения (15-30 минут) для блокировки мелатонина.</span></div>
-                    <div class="check-item"><span class="check-icon">🍃</span> <span><strong>Детокс кофеина:</strong> Сокращаем до 1 энергетика (до 12:00).</span></div>
-                    <div class="check-item"><span class="check-icon">🥤</span> <span><strong>Замена:</strong> Вместо 2-го энергетика — домашний лимонад (Барбарис + Клюква) в сифоне.</span></div>
+                    <div class="check-item"><span class="check-icon">⏰</span> <span><strong>Подъем:</strong> Возвращение к 06:00.</span></div>
+                    <div class="check-item"><span class="check-icon">🍃</span> <span><strong>Детокс:</strong> Строго 1 энергетик (до 12:00). Отмена второго.</span></div>
+                    <div class="check-item"><span class="check-icon">📖</span> <span><strong>Переходная стадия:</strong> Чтение 30 минут перед сном без гаджетов.</span></div>
                 </div>
             </div>
 
@@ -240,46 +254,36 @@
             <div id="week-3" class="week-card card p-6">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider">Неделя 3</span>
-                        <h2 class="text-xl font-bold text-slate-800">Изоляция: Магний</h2>
-                        <p class="text-sm text-slate-500 italic">18 марта – 24 марта</p>
+                        <span class="text-xs font-bold text-amber-500 uppercase tracking-wider">Неделя 3</span>
+                        <h2 class="text-xl font-bold text-slate-800">Свет и Лайтбокс</h2>
+                        <p class="text-sm text-slate-500 italic">23 марта – 29 марта</p>
                     </div>
                 </div>
-                <div class="space-y-3">
-                    <div class="check-item"><span class="check-icon">💊</span> <span><strong>Магний:</strong> Прием в 20:00 (за 2 часа до сна). Снятие мышечных зажимов шеи.</span></div>
-                    <div class="check-item"><span class="check-icon">📈</span> <span><strong>Анализ:</strong> Смотрим на "Баллы глубокого сна". Должны начать расти.</span></div>
-                </div>
+                <div class="check-item"><span class="check-icon">💡</span> <span>Ввод лайтбокса утром для настройки ритмов.</span></div>
             </div>
 
             <!-- WEEK 4 -->
             <div id="week-4" class="week-card card p-6">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider">Неделя 4</span>
-                        <h2 class="text-xl font-bold text-slate-800">Синергия: Физиология</h2>
-                        <p class="text-sm text-slate-500 italic">25 марта – 31 марта</p>
+                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider">Неделя 4</span>
+                        <h2 class="text-xl font-bold text-slate-800">Магний и Релаксация</h2>
+                        <p class="text-sm text-slate-500 italic">30 марта – 5 апреля</p>
                     </div>
                 </div>
-                <div class="space-y-3">
-                    <div class="check-item"><span class="check-icon">🍵</span> <span><strong>21:00 Чай:</strong> Успокаивающий травяной сбор без сахара.</span></div>
-                    <div class="check-item"><span class="check-icon">❄️</span> <span><strong>21:40 Холод:</strong> Холодное полотенце или маска на лицо (активация блуждающего нерва).</span></div>
-                    <div class="check-item"><span class="check-icon">🧘</span> <span><strong>21:50 Дыхание:</strong> Техника «4-7-8» уже в постели для снятия тревожности.</span></div>
-                </div>
+                <div class="check-item"><span class="check-icon">💊</span> <span>Магний в 20:00 для снятия напряжения.</span></div>
             </div>
-
+            
             <!-- WEEK 5 -->
             <div id="week-5" class="week-card card p-6">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-purple-500 uppercase tracking-wider">Неделя 5</span>
-                        <h2 class="text-xl font-bold text-slate-800">Когнитивная разгрузка</h2>
-                        <p class="text-sm text-slate-500 italic">1 апреля – 7 апреля</p>
+                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider">Неделя 5</span>
+                        <h2 class="text-xl font-bold text-slate-800">Полная синергия</h2>
+                        <p class="text-sm text-slate-500 italic">6 апреля – 12 апреля</p>
                     </div>
                 </div>
-                <div class="space-y-3">
-                    <div class="check-item"><span class="check-icon">🧩</span> <span><strong>21:00 Мозаика:</strong> Работа над алмазной мозаикой при мягком свете. Никаких экранов!</span></div>
-                    <div class="check-item"><span class="check-icon">📖</span> <span><strong>21:45 Чтение:</strong> E-ink книга или бумажная книга с желтой подсветкой как финальный сигнал мозгу.</span></div>
-                </div>
+                <div class="check-item"><span class="check-icon">🧘</span> <span>Объединение всех факторов + дыхательные техники.</span></div>
             </div>
         </section>
     </div>
@@ -289,17 +293,15 @@
         import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "AIzaSyDaYnBz2Bdv-nqETKlIQaKid_umHgr_2N0",
-                authDomain: "sleeptracker-5962d.firebaseapp.com",
-                projectId: "sleeptracker-5962d",
-                storageBucket: "sleeptracker-5962d.firebasestorage.app",
-                messagingSenderId: "801320667080",
-                appId: "1:801320667080:web:ec5e994bcedc1ba24ca2fd",
-                measurementId: "G-NNMGKSTYG8"
-            };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaYnBz2Bdv-nqETKlIQaKid_umHgr_2N0",
+            authDomain: "sleeptracker-5962d.firebaseapp.com",
+            projectId: "sleeptracker-5962d",
+            storageBucket: "sleeptracker-5962d.firebasestorage.app",
+            messagingSenderId: "801320667080",
+            appId: "1:801320667080:web:ec5e994bcedc1ba24ca2fd",
+            measurementId: "G-NNMGKSTYG8"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -307,14 +309,14 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-sleep-tracker';
 
         let sleepData = [];
-        let chart = null;
+        let chartInstances = {};
 
         const phases = [
-            { name: 'Неделя 1', start: '2026-03-04', end: '2026-03-10', color: 'rgba(239, 68, 68, 0.04)' },
-            { name: 'Неделя 2', start: '2026-03-11', end: '2026-03-17', color: 'rgba(245, 158, 11, 0.04)' },
-            { name: 'Неделя 3', start: '2026-03-18', end: '2026-03-24', color: 'rgba(16, 185, 129, 0.04)' },
-            { name: 'Неделя 4', start: '2026-03-25', end: '2026-03-31', color: 'rgba(59, 130, 246, 0.04)' },
-            { name: 'Неделя 5', start: '2026-04-01', end: '2026-04-07', color: 'rgba(139, 92, 246, 0.04)' }
+            { name: 'Отпуск', start: '2026-03-04', end: '2026-03-15', color: 'rgba(148, 163, 184, 0.05)' },
+            { name: 'Рестарт', start: '2026-03-16', end: '2026-03-22', color: 'rgba(239, 68, 68, 0.05)' },
+            { name: 'Свет', start: '2026-03-23', end: '2026-03-29', color: 'rgba(245, 158, 11, 0.05)' },
+            { name: 'Магний', start: '2026-03-30', end: '2026-04-05', color: 'rgba(16, 185, 129, 0.05)' },
+            { name: 'Синергия', start: '2026-04-06', end: '2026-04-12', color: 'rgba(59, 130, 246, 0.05)' }
         ];
 
         onAuthStateChanged(auth, (user) => {
@@ -324,28 +326,51 @@
                 syncData();
                 highlightCurrentWeek();
             } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('hidden');
+                
+                // Исправлено: безопасная попытка автоматического входа с обработкой ошибок
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    signInWithCustomToken(auth, __initial_auth_token);
+                    signInWithCustomToken(auth, __initial_auth_token).catch(e => {
+                        console.warn("Mismatched or invalid custom token. Please use manual login.");
+                    });
                 }
             }
         });
 
         document.getElementById('login-form').onsubmit = async (e) => {
             e.preventDefault();
-            try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); } 
-            catch (err) { document.getElementById('login-error').classList.remove('hidden'); }
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const btn = document.getElementById('login-btn');
+            
+            btn.disabled = true;
+            btn.innerText = "Вход...";
+            
+            try { 
+                await signInWithEmailAndPassword(auth, email, pass);
+                document.getElementById('login-error').classList.add('hidden');
+            } catch (err) { 
+                document.getElementById('login-error').classList.remove('hidden'); 
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Войти";
+            }
         };
 
         window.logout = () => signOut(auth);
 
         function syncData() {
+            if (!auth.currentUser) return;
             const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
             onSnapshot(logsRef, (snapshot) => {
                 sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(a.date) - new Date(b.date));
                 updateUI();
                 if (!document.getElementById('view-stats').classList.contains('hidden')) {
-                    renderChart();
+                    renderCharts();
                 }
+            }, (error) => {
+                console.error("Firestore sync error:", error);
             });
         }
 
@@ -354,24 +379,34 @@
                 document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
                 document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
             });
-            if (tab === 'stats') renderChart();
+            if (tab === 'stats') renderCharts();
         };
 
         function highlightCurrentWeek() {
             const today = new Date();
-            phases.forEach((p, index) => {
-                const el = document.getElementById(`week-${index+1}`);
-                if (el && today >= new Date(p.start) && today <= new Date(p.end)) {
+            const weekSchedules = [
+                { id: 'week-1', start: '2026-03-04', end: '2026-03-15' },
+                { id: 'week-2', start: '2026-03-16', end: '2026-03-22' },
+                { id: 'week-3', start: '2026-03-23', end: '2026-03-29' },
+                { id: 'week-4', start: '2026-03-30', end: '2026-04-05' },
+                { id: 'week-5', start: '2026-04-06', end: '2026-04-12' }
+            ];
+            weekSchedules.forEach(w => {
+                const el = document.getElementById(w.id);
+                if (el && today >= new Date(w.start) && today <= new Date(w.end)) {
                     el.classList.add('week-active');
-                    if (!el.querySelector('.current-badge')) {
-                        el.insertAdjacentHTML('afterbegin', '<div class="current-badge text-[10px] font-bold text-green-600 mb-1">ТЕКУЩАЯ НЕДЕЛЯ</div>');
-                    }
                 }
             });
         }
 
         document.getElementById('sleep-form').onsubmit = async (e) => {
             e.preventDefault();
+            if (!auth.currentUser) return;
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Сохранение...";
+
             const date = document.getElementById('input-date').value;
             const entry = {
                 date,
@@ -389,10 +424,16 @@
                 sleepAt: document.getElementById('input-sleep-at').value || "--:--",
                 updatedAt: new Date().toISOString()
             };
+
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'logs', date), entry);
                 alert("Данные сохранены!");
-            } catch (err) { alert("Ошибка сохранения."); }
+            } catch (err) { 
+                alert("Ошибка сохранения. Проверьте права доступа."); 
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Сохранить в облако";
+            }
         };
 
         function updateUI() {
@@ -400,91 +441,118 @@
             const displayData = [...sleepData].reverse();
             body.innerHTML = displayData.map(d => {
                 const amitIcon = d.amitriptyline === 'Вовремя' ? '✅' : (d.amitriptyline === 'Позже' ? '⏳' : '❌');
-                const isSleepOk = d.totalMinutes >= 360 && d.totalMinutes <= 540;
-                const isDeepPctOk = d.deepPct >= 20 && d.deepPct <= 60;
-                const isDeepScoreOk = d.deepScore >= 70;
-                const isBreathOk = d.breathScore >= 90;
-                const isAwakeOk = d.awakenings <= 1;
-
                 return `
                 <tr class="hover:bg-slate-50 transition text-sm">
                     <td class="p-4 font-medium text-slate-700">${new Date(d.date).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'})}</td>
-                    <td class="p-4" title="${d.amitriptyline}">${amitIcon}</td>
+                    <td class="p-4">${amitIcon}</td>
                     <td class="p-4 font-bold text-indigo-600">${d.score || 0}</td>
-                    <td class="p-4 ${isSleepOk ? '' : 'text-amber-600 font-bold'}">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
-                    <td class="p-4 ${isDeepPctOk ? '' : 'text-amber-600'}">${d.deepPct}%</td>
-                    <td class="p-4 ${isDeepScoreOk ? '' : 'text-rose-500 font-bold'}">${d.deepScore || 0}</td>
-                    <td class="p-4 ${isBreathOk ? '' : 'text-rose-500 font-bold'}">${d.breathScore || 0}</td>
-                    <td class="p-4 ${isAwakeOk ? '' : 'text-rose-500 font-bold'}">${d.awakenings || 0}</td>
+                    <td class="p-4">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
+                    <td class="p-4">${d.deepPct}%</td>
+                    <td class="p-4">${d.deepScore || 0}</td>
+                    <td class="p-4">${d.breathScore || 0}</td>
+                    <td class="p-4">${d.awakenings || 0}</td>
                     <td class="p-4">${d.migraine ? '⚠️' : 'Нет'}</td>
                 </tr>
             `;}).join('');
         }
 
-        const phaseBackgroundPlugin = {
+        function timeToDecimal(timeStr) {
+            if (!timeStr || timeStr === "--:--" || timeStr === "") return null;
+            const parts = timeStr.split(':');
+            if (parts.length < 2) return null;
+            const h = parseInt(parts[0]);
+            const m = parseInt(parts[1]);
+            let val = h + m / 60;
+            if (val < 12) val += 24; 
+            return val;
+        }
+
+        const phasePlugin = {
             id: 'phaseBackground',
             beforeDraw: (chart) => {
-                const { ctx, chartArea, scales: { x, y } } = chart;
+                const { ctx, chartArea, scales: { x } } = chart;
                 phases.forEach(p => {
-                    const startPos = x.getPixelForValue(new Date(p.start).toLocaleDateString('ru-RU', {day:'numeric'}));
-                    const endPos = x.getPixelForValue(new Date(p.end).toLocaleDateString('ru-RU', {day:'numeric'}));
-                    
+                    const startLabel = new Date(p.start).toLocaleDateString('ru-RU', {day:'numeric', month:'2-digit'});
+                    const endLabel = new Date(p.end).toLocaleDateString('ru-RU', {day:'numeric', month:'2-digit'});
+                    const startPos = x.getPixelForValue(startLabel);
+                    const endPos = x.getPixelForValue(endLabel);
                     if (!isNaN(startPos) && !isNaN(endPos)) {
                         ctx.save();
                         ctx.fillStyle = p.color;
                         ctx.fillRect(startPos, chartArea.top, endPos - startPos, chartArea.bottom - chartArea.top);
-                        
-                        ctx.fillStyle = 'rgba(100, 116, 139, 0.4)';
-                        ctx.font = 'bold 9px sans-serif';
-                        ctx.fillText(p.name, startPos + 5, chartArea.top + 15);
                         ctx.restore();
                     }
                 });
             }
         };
 
-        function renderChart() {
-            const ctx = document.getElementById('chart-main').getContext('2d');
-            if (chart) chart.destroy();
+        function renderCharts() {
+            if (sleepData.length === 0) return;
+            const labels = sleepData.map(d => new Date(d.date).toLocaleDateString('ru-RU', {day:'numeric', month:'2-digit'}));
             
-            const labels = sleepData.map(d => new Date(d.date).toLocaleDateString('ru-RU', {day:'numeric'}));
-            const scores = sleepData.map(d => d.score);
+            createChart('chart-sleep-at', labels, sleepData.map(d => timeToDecimal(d.sleepAt)), 'Заснула (час)', '#6366f1', 22.5);
+            createChart('chart-score', labels, sleepData.map(d => d.score), 'Баллы сна', '#8b5cf6', 70);
+            createChart('chart-wake-time', labels, sleepData.map(d => {
+                const t = timeToDecimal(d.wake);
+                return (t !== null && t > 24) ? t - 24 : t;
+            }), 'Подъем (час)', '#10b981', 6.0);
+        }
 
-            chart = new Chart(ctx, {
+        function createChart(canvasId, labels, data, title, color, refLineValue) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+
+            chartInstances[canvasId] = new Chart(ctx, {
                 type: 'line',
-                plugins: [phaseBackgroundPlugin],
+                plugins: [phasePlugin],
                 data: {
                     labels: labels,
-                    datasets: [{ 
-                        label: 'Баллы сна', 
-                        data: scores, 
-                        borderColor: '#6366f1', 
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#6366f1'
-                    }]
+                    datasets: [
+                        {
+                            label: title,
+                            data: data,
+                            borderColor: color,
+                            backgroundColor: color + '22',
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 4,
+                            spanGaps: true
+                        },
+                        {
+                            label: 'Ориентир',
+                            data: Array(labels.length).fill(refLineValue),
+                            borderColor: '#ef4444',
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            borderWidth: 2
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: { 
-                            min: 0, 
-                            max: 100,
-                            ticks: { font: { size: 10 } }
-                        },
-                        x: {
-                            ticks: { font: { size: 10 } }
+                        y: {
+                            ticks: {
+                                callback: value => {
+                                    if (canvasId.includes('time') || canvasId.includes('at')) {
+                                        const h = value >= 24 ? Math.floor(value-24) : Math.floor(value);
+                                        const m = Math.round((value % 1) * 60);
+                                        return h.toString().padStart(2,'0') + ':' + m.toString().padStart(2,'0');
+                                    }
+                                    return value;
+                                }
+                            }
                         }
-                    },
-                    plugins: {
-                        legend: { display: false }
                     }
                 }
             });
         }
+
         document.getElementById('input-date').valueAsDate = new Date();
     </script>
 </body>
