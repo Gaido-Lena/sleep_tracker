@@ -76,7 +76,8 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-600">Энергетики (шт)</label>
-                        <input type="number" id="input-energy" class="input-field" value="1" min="0">
+                        <!-- Изменено: добавлен step="0.1" для ввода дробных чисел -->
+                        <input type="number" id="input-energy" class="input-field" value="1" min="0" step="0.1">
                     </div>
 
                     <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4 border-t pt-4">
@@ -164,6 +165,7 @@
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Глуб.б (70+)</th>
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Дых. (90+)</th>
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Проб. (0-1)</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Энерг.</th>
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Мигрень</th>
                         </tr>
                     </thead>
@@ -206,7 +208,7 @@
             <div class="grid grid-cols-1 gap-4">
                 <div class="card p-6 bg-rose-50 border-rose-100 priority-high">
                     <h3 class="font-bold text-rose-800 text-lg mb-2 flex items-center">🔴 Критические факторы</h3>
-                    <p class="text-sm text-slate-600">Подъем в 06:00, Амитриптилин 15:00, Отмена 2-го энергетика, Лайтбокс.</p>
+                    <p class="text-sm text-slate-600">Подъем в 06:00, Амитриптилин 15:00, Постепенное снижение энергетиков, Лайтбокс.</p>
                 </div>
                 <div class="card p-6 bg-amber-50 border-amber-100 priority-med">
                     <h3 class="font-bold text-amber-800 text-lg mb-2 flex items-center">🟡 Высокая значимость</h3>
@@ -245,7 +247,7 @@
                 </div>
                 <div class="space-y-3">
                     <div class="check-item"><span class="check-icon">⏰</span> <span><strong>Подъем:</strong> Возвращение к 06:00.</span></div>
-                    <div class="check-item"><span class="check-icon">🍃</span> <span><strong>Детокс:</strong> Строго 1 энергетик (до 12:00). Отмена второго.</span></div>
+                    <div class="check-item"><span class="check-icon">🍃</span> <span><strong>Детокс:</strong> Постепенное снижение энергетиков (шаг 0.5). Цель: 1 баночка.</span></div>
                     <div class="check-item"><span class="check-icon">📖</span> <span><strong>Переходная стадия:</strong> Чтение 30 минут перед сном без гаджетов.</span></div>
                 </div>
             </div>
@@ -328,8 +330,6 @@
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('main-content').classList.add('hidden');
-                
-                // Исправлено: безопасная попытка автоматического входа с обработкой ошибок
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     signInWithCustomToken(auth, __initial_auth_token).catch(e => {
                         console.warn("Mismatched or invalid custom token. Please use manual login.");
@@ -343,10 +343,8 @@
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
             const btn = document.getElementById('login-btn');
-            
             btn.disabled = true;
             btn.innerText = "Вход...";
-            
             try { 
                 await signInWithEmailAndPassword(auth, email, pass);
                 document.getElementById('login-error').classList.add('hidden');
@@ -402,16 +400,14 @@
         document.getElementById('sleep-form').onsubmit = async (e) => {
             e.preventDefault();
             if (!auth.currentUser) return;
-
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerText = "Сохранение...";
-
             const date = document.getElementById('input-date').value;
             const entry = {
                 date,
                 wake: document.getElementById('input-wake').value,
-                energy: parseInt(document.getElementById('input-energy').value) || 0,
+                energy: parseFloat(document.getElementById('input-energy').value) || 0, // Изменено на parseFloat
                 score: parseInt(document.getElementById('input-score').value) || 0,
                 deepPct: parseInt(document.getElementById('input-deep-pct').value) || 0,
                 deepScore: parseInt(document.getElementById('input-deep-score').value) || 0,
@@ -424,7 +420,6 @@
                 sleepAt: document.getElementById('input-sleep-at').value || "--:--",
                 updatedAt: new Date().toISOString()
             };
-
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'logs', date), entry);
                 alert("Данные сохранены!");
@@ -451,6 +446,7 @@
                     <td class="p-4">${d.deepScore || 0}</td>
                     <td class="p-4">${d.breathScore || 0}</td>
                     <td class="p-4">${d.awakenings || 0}</td>
+                    <td class="p-4">${d.energy || 0}</td> <!-- Добавлена колонка Энерг. -->
                     <td class="p-4">${d.migraine ? '⚠️' : 'Нет'}</td>
                 </tr>
             `;}).join('');
@@ -489,7 +485,6 @@
         function renderCharts() {
             if (sleepData.length === 0) return;
             const labels = sleepData.map(d => new Date(d.date).toLocaleDateString('ru-RU', {day:'numeric', month:'2-digit'}));
-            
             createChart('chart-sleep-at', labels, sleepData.map(d => timeToDecimal(d.sleepAt)), 'Заснула (час)', '#6366f1', 22.5);
             createChart('chart-score', labels, sleepData.map(d => d.score), 'Баллы сна', '#8b5cf6', 70);
             createChart('chart-wake-time', labels, sleepData.map(d => {
@@ -503,7 +498,6 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
-
             chartInstances[canvasId] = new Chart(ctx, {
                 type: 'line',
                 plugins: [phasePlugin],
@@ -552,7 +546,6 @@
                 }
             });
         }
-
         document.getElementById('input-date').valueAsDate = new Date();
     </script>
 </body>
