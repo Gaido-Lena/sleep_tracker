@@ -76,11 +76,11 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-600">Энергетики (шт)</label>
-                        <!-- Изменено: добавлен step="0.1" для ввода дробных чисел -->
-                        <input type="number" id="input-energy" class="input-field" value="1" min="0" step="0.1">
+                        <input type="number" id="input-energy" class="input-field" value="1.5" min="0" step="0.1">
                     </div>
 
-                    <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4 border-t pt-4">
+                    <!-- Метрики Huawei Health -->
+                    <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4 border-t pt-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-600">Баллы сна</label>
                             <input type="number" id="input-score" class="input-field" placeholder="0-100">
@@ -90,6 +90,11 @@
                             <label class="block text-sm font-semibold text-slate-600">Глубокий %</label>
                             <input type="number" id="input-deep-pct" class="input-field" placeholder="%">
                             <span class="ref-hint">Норма: 20-60%</span>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-600">REM (Быстрый) %</label>
+                            <input type="number" id="input-rem-pct" class="input-field" placeholder="%">
+                            <span class="ref-hint">Норма: 10-30%</span>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-600">Глубокий (баллы)</label>
@@ -162,6 +167,7 @@
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Баллы</th>
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Сон (6-9ч)</th>
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Глуб.% (20-60)</th>
+                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">REM% (10-30)</th>
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Глуб.б (70+)</th>
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Дых. (90+)</th>
                             <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Проб. (0-1)</th>
@@ -177,28 +183,21 @@
         <!-- VIEW: STATS -->
         <section id="view-stats" class="hidden space-y-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- CHART: SLEEP AT -->
                 <div class="card p-6">
                     <h3 class="font-bold text-slate-800 mb-4 text-center">Время засыпания (Реф: 22:30)</h3>
-                    <div class="h-[250px]">
-                        <canvas id="chart-sleep-at"></canvas>
-                    </div>
+                    <div class="h-[250px]"><canvas id="chart-sleep-at"></canvas></div>
                 </div>
-
-                <!-- CHART: SCORE -->
                 <div class="card p-6">
                     <h3 class="font-bold text-slate-800 mb-4 text-center">Баллы сна (Реф: 70+)</h3>
-                    <div class="h-[250px]">
-                        <canvas id="chart-score"></canvas>
-                    </div>
+                    <div class="h-[250px]"><canvas id="chart-score"></canvas></div>
                 </div>
-
-                <!-- CHART: WAKE TIME -->
-                <div class="card p-6 lg:col-span-2">
+                <div class="card p-6">
+                    <h3 class="font-bold text-slate-800 mb-4 text-center">REM сон % (Норма: 10-30)</h3>
+                    <div class="h-[250px]"><canvas id="chart-rem-pct"></canvas></div>
+                </div>
+                <div class="card p-6">
                     <h3 class="font-bold text-slate-800 mb-4 text-center">Время подъема (Реф: 06:00)</h3>
-                    <div class="h-[250px]">
-                        <canvas id="chart-wake-time"></canvas>
-                    </div>
+                    <div class="h-[250px]"><canvas id="chart-wake-time"></canvas></div>
                 </div>
             </div>
         </section>
@@ -223,7 +222,6 @@
 
         <!-- VIEW: SCHEDULE -->
         <section id="view-schedule" class="hidden space-y-4">
-            <!-- WEEK 1 -->
             <div id="week-1" class="week-card card p-6 bg-slate-50 border-slate-300 opacity-75">
                 <div class="flex justify-between items-start mb-4">
                     <div>
@@ -231,12 +229,9 @@
                         <h2 class="text-xl font-bold text-slate-400">Отпуск / Сбой режима</h2>
                         <p class="text-sm text-slate-400 italic">4 марта – 15 марта</p>
                     </div>
-                    <div class="bg-slate-200 text-slate-500 text-[10px] font-bold px-2 py-1 rounded">FAILURE</div>
                 </div>
                 <p class="text-sm text-slate-400">Эксперимент пошел не по плану из-за отпуска. Данные считаются фоновыми.</p>
             </div>
-
-            <!-- WEEK 2 REVISED -->
             <div id="week-2" class="week-card card p-6">
                 <div class="flex justify-between items-start mb-4">
                     <div>
@@ -247,45 +242,9 @@
                 </div>
                 <div class="space-y-3">
                     <div class="check-item"><span class="check-icon">⏰</span> <span><strong>Подъем:</strong> Возвращение к 06:00.</span></div>
-                    <div class="check-item"><span class="check-icon">🍃</span> <span><strong>Детокс:</strong> Постепенное снижение энергетиков (шаг 0.5). Цель: 1 баночка.</span></div>
-                    <div class="check-item"><span class="check-icon">📖</span> <span><strong>Переходная стадия:</strong> Чтение 30 минут перед сном без гаджетов.</span></div>
+                    <div class="check-item"><span class="check-icon">🍃</span> <span><strong>Детокс:</strong> Постепенное снижение энергетиков. Цель: 1 баночка.</span></div>
+                    <div class="check-item"><span class="check-icon">📖</span> <span><strong>Переходная стадия:</strong> Чтение 30 минут перед сном.</span></div>
                 </div>
-            </div>
-
-            <!-- WEEK 3 -->
-            <div id="week-3" class="week-card card p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span class="text-xs font-bold text-amber-500 uppercase tracking-wider">Неделя 3</span>
-                        <h2 class="text-xl font-bold text-slate-800">Свет и Лайтбокс</h2>
-                        <p class="text-sm text-slate-500 italic">23 марта – 29 марта</p>
-                    </div>
-                </div>
-                <div class="check-item"><span class="check-icon">💡</span> <span>Ввод лайтбокса утром для настройки ритмов.</span></div>
-            </div>
-
-            <!-- WEEK 4 -->
-            <div id="week-4" class="week-card card p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span class="text-xs font-bold text-emerald-500 uppercase tracking-wider">Неделя 4</span>
-                        <h2 class="text-xl font-bold text-slate-800">Магний и Релаксация</h2>
-                        <p class="text-sm text-slate-500 italic">30 марта – 5 апреля</p>
-                    </div>
-                </div>
-                <div class="check-item"><span class="check-icon">💊</span> <span>Магний в 20:00 для снятия напряжения.</span></div>
-            </div>
-            
-            <!-- WEEK 5 -->
-            <div id="week-5" class="week-card card p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span class="text-xs font-bold text-blue-500 uppercase tracking-wider">Неделя 5</span>
-                        <h2 class="text-xl font-bold text-slate-800">Полная синергия</h2>
-                        <p class="text-sm text-slate-500 italic">6 апреля – 12 апреля</p>
-                    </div>
-                </div>
-                <div class="check-item"><span class="check-icon">🧘</span> <span>Объединение всех факторов + дыхательные техники.</span></div>
             </div>
         </section>
     </div>
@@ -316,9 +275,7 @@
         const phases = [
             { name: 'Отпуск', start: '2026-03-04', end: '2026-03-15', color: 'rgba(148, 163, 184, 0.05)' },
             { name: 'Рестарт', start: '2026-03-16', end: '2026-03-22', color: 'rgba(239, 68, 68, 0.05)' },
-            { name: 'Свет', start: '2026-03-23', end: '2026-03-29', color: 'rgba(245, 158, 11, 0.05)' },
-            { name: 'Магний', start: '2026-03-30', end: '2026-04-05', color: 'rgba(16, 185, 129, 0.05)' },
-            { name: 'Синергия', start: '2026-04-06', end: '2026-04-12', color: 'rgba(59, 130, 246, 0.05)' }
+            { name: 'Свет', start: '2026-03-23', end: '2026-03-29', color: 'rgba(245, 158, 11, 0.05)' }
         ];
 
         onAuthStateChanged(auth, (user) => {
@@ -331,9 +288,7 @@
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('main-content').classList.add('hidden');
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    signInWithCustomToken(auth, __initial_auth_token).catch(e => {
-                        console.warn("Mismatched or invalid custom token. Please use manual login.");
-                    });
+                    signInWithCustomToken(auth, __initial_auth_token).catch(() => {});
                 }
             }
         });
@@ -342,18 +297,8 @@
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            const btn = document.getElementById('login-btn');
-            btn.disabled = true;
-            btn.innerText = "Вход...";
-            try { 
-                await signInWithEmailAndPassword(auth, email, pass);
-                document.getElementById('login-error').classList.add('hidden');
-            } catch (err) { 
-                document.getElementById('login-error').classList.remove('hidden'); 
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Войти";
-            }
+            try { await signInWithEmailAndPassword(auth, email, pass); } 
+            catch (err) { document.getElementById('login-error').classList.remove('hidden'); }
         };
 
         window.logout = () => signOut(auth);
@@ -362,13 +307,11 @@
             if (!auth.currentUser) return;
             const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
             onSnapshot(logsRef, (snapshot) => {
+                sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(a.date) - new Date(a.date));
+                // Fix: ensure correct sorting for the chart
                 sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(a.date) - new Date(b.date));
                 updateUI();
-                if (!document.getElementById('view-stats').classList.contains('hidden')) {
-                    renderCharts();
-                }
-            }, (error) => {
-                console.error("Firestore sync error:", error);
+                if (!document.getElementById('view-stats').classList.contains('hidden')) renderCharts();
             });
         }
 
@@ -382,34 +325,22 @@
 
         function highlightCurrentWeek() {
             const today = new Date();
-            const weekSchedules = [
-                { id: 'week-1', start: '2026-03-04', end: '2026-03-15' },
-                { id: 'week-2', start: '2026-03-16', end: '2026-03-22' },
-                { id: 'week-3', start: '2026-03-23', end: '2026-03-29' },
-                { id: 'week-4', start: '2026-03-30', end: '2026-04-05' },
-                { id: 'week-5', start: '2026-04-06', end: '2026-04-12' }
-            ];
-            weekSchedules.forEach(w => {
-                const el = document.getElementById(w.id);
-                if (el && today >= new Date(w.start) && today <= new Date(w.end)) {
-                    el.classList.add('week-active');
-                }
+            phases.forEach((p, index) => {
+                const el = document.getElementById(`week-${index+1}`);
+                if (el && today >= new Date(p.start) && today <= new Date(p.end)) el.classList.add('week-active');
             });
         }
 
         document.getElementById('sleep-form').onsubmit = async (e) => {
             e.preventDefault();
-            if (!auth.currentUser) return;
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Сохранение...";
             const date = document.getElementById('input-date').value;
             const entry = {
                 date,
                 wake: document.getElementById('input-wake').value,
-                energy: parseFloat(document.getElementById('input-energy').value) || 0, // Изменено на parseFloat
+                energy: parseFloat(document.getElementById('input-energy').value) || 0,
                 score: parseInt(document.getElementById('input-score').value) || 0,
                 deepPct: parseInt(document.getElementById('input-deep-pct').value) || 0,
+                remPct: parseInt(document.getElementById('input-rem-pct').value) || 0,
                 deepScore: parseInt(document.getElementById('input-deep-score').value) || 0,
                 breathScore: parseInt(document.getElementById('input-breath-score').value) || 0,
                 awakenings: parseInt(document.getElementById('input-awakenings').value) || 0,
@@ -423,12 +354,7 @@
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'logs', date), entry);
                 alert("Данные сохранены!");
-            } catch (err) { 
-                alert("Ошибка сохранения. Проверьте права доступа."); 
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Сохранить в облако";
-            }
+            } catch (err) { alert("Ошибка сохранения."); }
         };
 
         function updateUI() {
@@ -436,6 +362,7 @@
             const displayData = [...sleepData].reverse();
             body.innerHTML = displayData.map(d => {
                 const amitIcon = d.amitriptyline === 'Вовремя' ? '✅' : (d.amitriptyline === 'Позже' ? '⏳' : '❌');
+                const isRemOk = d.remPct >= 10 && d.remPct <= 30; // UPDATED to 10-30%
                 return `
                 <tr class="hover:bg-slate-50 transition text-sm">
                     <td class="p-4 font-medium text-slate-700">${new Date(d.date).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'})}</td>
@@ -443,10 +370,11 @@
                     <td class="p-4 font-bold text-indigo-600">${d.score || 0}</td>
                     <td class="p-4">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
                     <td class="p-4">${d.deepPct}%</td>
+                    <td class="p-4 ${isRemOk ? '' : 'text-amber-600 font-bold'}">${d.remPct || 0}%</td>
                     <td class="p-4">${d.deepScore || 0}</td>
                     <td class="p-4">${d.breathScore || 0}</td>
                     <td class="p-4">${d.awakenings || 0}</td>
-                    <td class="p-4">${d.energy || 0}</td> <!-- Добавлена колонка Энерг. -->
+                    <td class="p-4 text-center">${d.energy || 0}</td>
                     <td class="p-4">${d.migraine ? '⚠️' : 'Нет'}</td>
                 </tr>
             `;}).join('');
@@ -456,9 +384,7 @@
             if (!timeStr || timeStr === "--:--" || timeStr === "") return null;
             const parts = timeStr.split(':');
             if (parts.length < 2) return null;
-            const h = parseInt(parts[0]);
-            const m = parseInt(parts[1]);
-            let val = h + m / 60;
+            let val = parseInt(parts[0]) + parseInt(parts[1]) / 60;
             if (val < 12) val += 24; 
             return val;
         }
@@ -473,8 +399,7 @@
                     const startPos = x.getPixelForValue(startLabel);
                     const endPos = x.getPixelForValue(endLabel);
                     if (!isNaN(startPos) && !isNaN(endPos)) {
-                        ctx.save();
-                        ctx.fillStyle = p.color;
+                        ctx.save(); ctx.fillStyle = p.color;
                         ctx.fillRect(startPos, chartArea.top, endPos - startPos, chartArea.bottom - chartArea.top);
                         ctx.restore();
                     }
@@ -487,47 +412,26 @@
             const labels = sleepData.map(d => new Date(d.date).toLocaleDateString('ru-RU', {day:'numeric', month:'2-digit'}));
             createChart('chart-sleep-at', labels, sleepData.map(d => timeToDecimal(d.sleepAt)), 'Заснула (час)', '#6366f1', 22.5);
             createChart('chart-score', labels, sleepData.map(d => d.score), 'Баллы сна', '#8b5cf6', 70);
+            createChart('chart-rem-pct', labels, sleepData.map(d => d.remPct), 'REM сон %', '#f59e0b', 20); // Reference at 20 as lower bound of ideal
             createChart('chart-wake-time', labels, sleepData.map(d => {
-                const t = timeToDecimal(d.wake);
-                return (t !== null && t > 24) ? t - 24 : t;
+                const t = timeToDecimal(d.wake); return (t !== null && t > 24) ? t - 24 : t;
             }), 'Подъем (час)', '#10b981', 6.0);
         }
 
         function createChart(canvasId, labels, data, title, color, refLineValue) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
+            const ctx = document.getElementById(canvasId).getContext('2d');
             if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
             chartInstances[canvasId] = new Chart(ctx, {
-                type: 'line',
-                plugins: [phasePlugin],
+                type: 'line', plugins: [phasePlugin],
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: title,
-                            data: data,
-                            borderColor: color,
-                            backgroundColor: color + '22',
-                            fill: true,
-                            tension: 0.3,
-                            pointRadius: 4,
-                            spanGaps: true
-                        },
-                        {
-                            label: 'Ориентир',
-                            data: Array(labels.length).fill(refLineValue),
-                            borderColor: '#ef4444',
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            fill: false,
-                            borderWidth: 2
-                        }
+                        { label: title, data: data, borderColor: color, backgroundColor: color + '22', fill: true, tension: 0.3, pointRadius: 4, spanGaps: true },
+                        { label: 'Реф', data: Array(labels.length).fill(refLineValue), borderColor: '#ef4444', borderDash: [5, 5], pointRadius: 0, fill: false, borderWidth: 2 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
                         y: {
@@ -535,8 +439,7 @@
                                 callback: value => {
                                     if (canvasId.includes('time') || canvasId.includes('at')) {
                                         const h = value >= 24 ? Math.floor(value-24) : Math.floor(value);
-                                        const m = Math.round((value % 1) * 60);
-                                        return h.toString().padStart(2,'0') + ':' + m.toString().padStart(2,'0');
+                                        return h.toString().padStart(2,'0') + ':' + (Math.round((value % 1) * 60)).toString().padStart(2,'0');
                                     }
                                     return value;
                                 }
