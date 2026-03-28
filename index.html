@@ -7,243 +7,469 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #f8fafc; color: #1e293b; font-family: sans-serif; }
-        .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-        .input-field { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; margin-top: 0.25rem; }
-        .btn-primary { background-color: #6366f1; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; }
-        .tab-btn { padding: 0.75rem 1rem; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
-        .tab-btn.active { color: #6366f1; border-color: #6366f1; }
-        .ref-hint { font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem; display: block; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body { 
+            background-color: #f1f5f9; 
+            color: #1e293b; 
+            font-family: 'Inter', sans-serif; 
+        }
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .card { 
+            background: rgba(255, 255, 255, 0.95); 
+            border-radius: 1.25rem; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .input-field { 
+            width: 100%; 
+            padding: 0.75rem 1rem; 
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0; 
+            border-radius: 0.75rem; 
+            margin-top: 0.35rem; 
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+            background-color: #ffffff;
+        }
+
+        .btn-primary { 
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white; 
+            padding: 0.75rem 1.5rem; 
+            border-radius: 0.75rem; 
+            font-weight: 600; 
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.4);
+        }
+
+        .tab-btn { 
+            padding: 0.6rem 1.2rem; 
+            font-weight: 600; 
+            color: #64748b; 
+            border-radius: 0.75rem;
+            cursor: pointer; 
+            white-space: nowrap; 
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .tab-btn:hover { background-color: #f1f5f9; color: #334155; }
+        .tab-btn.active { 
+            background-color: #6366f1; 
+            color: white; 
+            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+        }
+
+        .ref-hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.3rem; display: block; }
         .hidden { display: none !important; }
         
-        .priority-high { border-left: 4px solid #ef4444; }
-        .priority-med { border-left: 4px solid #f59e0b; }
-        .priority-low { border-left: 4px solid #10b981; }
+        /* Hypotheses priorities */
+        .priority-high { border-left: 5px solid #ef4444; }
+        .priority-med { border-left: 5px solid #f59e0b; }
+        .priority-low { border-left: 5px solid #10b981; }
 
-        .week-card { border-left: 4px solid #e2e8f0; transition: all 0.3s ease; }
-        .week-active { border-left: 6px solid #10b981 !important; background-color: #f0fdf4; transform: scale(1.01); }
-        .check-item { display: flex; align-items: flex-start; margin-bottom: 0.5rem; font-size: 0.875rem; color: #475569; }
+        /* Schedule cards */
+        .week-card { border-left: 5px solid #cbd5e1; transition: all 0.3s ease; }
+        .week-active { 
+            border-left: 5px solid #10b981 !important; 
+            background-color: #f0fdf4; 
+            transform: scale(1.02); 
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.15);
+        }
+        
+        .check-item { display: flex; align-items: flex-start; margin-bottom: 0.75rem; font-size: 0.95rem; color: #475569; }
         .check-icon { margin-right: 0.75rem; margin-top: 0.125rem; flex-shrink: 0; }
+        
+        /* Custom grouped section borders */
+        .form-section {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
     </style>
 </head>
-<body class="pb-12">
+<body class="pb-12 bg-slate-50 min-h-screen">
     <!-- ЭКРАН ВХОДА -->
-    <div id="auth-screen" class="fixed inset-0 bg-slate-100 z-[100] flex items-center justify-center p-4">
-        <div class="card p-8 w-full max-w-md">
-            <h2 class="text-2xl font-bold text-center mb-6 text-indigo-900">Вход в Sleep Lab 🌙</h2>
-            <form id="login-form" class="space-y-4">
+    <div id="auth-screen" class="fixed inset-0 bg-slate-100/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="card p-10 w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 text-3xl mb-4 shadow-inner">
+                    🌙
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Вход в Sleep Lab</h2>
+                <p class="text-slate-500 text-sm mt-2">Введите ваши данные для доступа</p>
+            </div>
+            
+            <form id="login-form" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-semibold text-slate-600">Email</label>
-                    <input type="email" id="login-email" class="input-field" required>
+                    <label class="block text-sm font-semibold text-slate-700">Email</label>
+                    <input type="email" id="login-email" class="input-field" placeholder="your@email.com" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-600">Пароль</label>
-                    <input type="password" id="login-password" class="input-field" required>
+                    <label class="block text-sm font-semibold text-slate-700">Пароль</label>
+                    <input type="password" id="login-password" class="input-field" placeholder="••••••••" required>
                 </div>
-                <button type="submit" id="login-btn" class="btn-primary w-full mt-4">Войти</button>
-                <p id="login-error" class="text-rose-500 text-sm text-center hidden">Неверный логин или пароль</p>
+                <button type="submit" id="login-btn" class="btn-primary w-full mt-2">Войти в систему</button>
+                <div id="login-error" class="bg-rose-50 text-rose-600 text-sm text-center p-3 rounded-lg hidden font-medium">
+                    Неверный логин или пароль
+                </div>
             </form>
         </div>
     </div>
 
     <!-- ОСНОВНОЙ КОНТЕНТ -->
-    <div id="main-content" class="max-w-5xl mx-auto px-4 pt-8 hidden">
+    <div id="main-content" class="max-w-6xl mx-auto px-4 pt-6 md:pt-10 hidden">
         <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-4">
-                <h1 class="text-3xl font-bold text-slate-900">Sleep Lab <span class="text-indigo-600">Secure</span> 🌙</h1>
-                <button onclick="logout()" class="text-xs text-slate-400 hover:text-rose-500 underline">Выйти</button>
+            <div class="flex items-center justify-between w-full md:w-auto">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
+                        Sleep Lab <span class="text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg text-lg">Secure</span>
+                    </h1>
+                    <p class="text-slate-500 text-sm mt-1">Персональный трекер восстановления</p>
+                </div>
+                <button onclick="logout()" class="md:hidden text-sm text-slate-400 hover:text-rose-500 font-medium">Выйти</button>
             </div>
-            <nav class="flex bg-white rounded-xl shadow-sm border p-1 overflow-x-auto max-w-full">
-                <button onclick="switchTab('form')" id="tab-form" class="tab-btn active">Ввод</button>
-                <button onclick="switchTab('history')" id="tab-history" class="tab-btn">История</button>
-                <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn">Аналитика</button>
-                <button onclick="switchTab('hypotheses')" id="tab-hypotheses" class="tab-btn">Гипотезы</button>
-                <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn">Расписание</button>
-            </nav>
+            
+            <div class="flex flex-col items-end gap-4 w-full md:w-auto">
+                <button onclick="logout()" class="hidden md:block text-sm text-slate-400 hover:text-rose-500 font-medium transition">Выйти из аккаунта</button>
+                <nav class="flex bg-white rounded-xl shadow-sm border border-slate-200 p-1.5 overflow-x-auto w-full md:w-auto hide-scrollbar">
+                    <button onclick="switchTab('form')" id="tab-form" class="tab-btn active">📝 Ввод</button>
+                    <button onclick="switchTab('history')" id="tab-history" class="tab-btn">📋 История</button>
+                    <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn">📊 Аналитика</button>
+                    <button onclick="switchTab('hypotheses')" id="tab-hypotheses" class="tab-btn">💡 Гипотезы</button>
+                    <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn">📅 План</button>
+                </nav>
+            </div>
         </header>
 
         <!-- VIEW: FORM -->
-        <main id="view-form" class="space-y-6">
-            <div class="card p-6">
-                <form id="sleep-form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-600">Дата</label>
-                        <input type="date" id="input-date" class="input-field" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-600">Подъем (факт)</label>
-                        <input type="time" id="input-wake" class="input-field" value="06:00">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-600">Энергетики (шт)</label>
-                        <input type="number" id="input-energy" class="input-field" value="1.5" min="0" step="0.1">
-                    </div>
-
-                    <!-- Метрики Huawei Health -->
-                    <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4 border-t pt-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">Баллы сна</label>
-                            <input type="number" id="input-score" class="input-field" placeholder="0-100">
-                            <span class="ref-hint">Норма: 70-100</span>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">Глубокий %</label>
-                            <input type="number" id="input-deep-pct" class="input-field" placeholder="%">
-                            <span class="ref-hint">Норма: 20-60%</span>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">REM (Быстрый) %</label>
-                            <input type="number" id="input-rem-pct" class="input-field" placeholder="%">
-                            <span class="ref-hint">Норма: 10-30%</span>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">Глубокий (баллы)</label>
-                            <input type="number" id="input-deep-score" class="input-field" placeholder="0-100">
-                            <span class="ref-hint">Норма: 70-100</span>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">Качество дыхания</label>
-                            <input type="number" id="input-breath-score" class="input-field" placeholder="0-100">
-                            <span class="ref-hint">Норма: 90-100</span>
-                        </div>
-                    </div>
-
-                    <div class="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">Заснула (браслет)</label>
-                            <input type="time" id="input-sleep-at" class="input-field">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">Пробуждения</label>
-                            <input type="number" id="input-awakenings" class="input-field" placeholder="Кол-во">
-                            <span class="ref-hint">Норма: 0-1</span>
-                        </div>
-                        <div class="col-span-2">
-                            <label class="block text-sm font-semibold text-slate-600">Всего сна (Huawei)</label>
-                            <div class="flex gap-2">
-                                <input type="number" id="input-hours" class="input-field" placeholder="Часов">
-                                <input type="number" id="input-mins" class="input-field" placeholder="Мин.">
+        <main id="view-form" class="fade-in">
+            <form id="sleep-form">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Левая колонка -->
+                    <div class="lg:col-span-8 space-y-6">
+                        
+                        <!-- Секция: Базовые метрики -->
+                        <div class="form-section shadow-sm">
+                            <h3 class="form-section-title"><span>⏱️</span> Базовые метрики</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700">Дата</label>
+                                    <input type="date" id="input-date" class="input-field" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700">Подъем (факт)</label>
+                                    <input type="time" id="input-wake" class="input-field" value="06:00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700">Энергетики (шт)</label>
+                                    <input type="number" id="input-energy" class="input-field" value="1.5" min="0" step="0.1">
+                                </div>
                             </div>
-                            <span class="ref-hint">Норма: 6-9 часов</span>
+                        </div>
+
+                        <!-- Секция: Данные с браслета -->
+                        <div class="form-section shadow-sm">
+                            <h3 class="form-section-title"><span>⌚</span> Данные Huawei Health</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700">Заснула в</label>
+                                    <input type="time" id="input-sleep-at" class="input-field">
+                                </div>
+                                <div class="col-span-2 md:col-span-1">
+                                    <label class="block text-sm font-semibold text-slate-700">Всего сна</label>
+                                    <div class="flex gap-2">
+                                        <input type="number" id="input-hours" class="input-field mt-1" placeholder="Часов">
+                                        <span class="text-slate-400 self-center font-bold mt-1">:</span>
+                                        <input type="number" id="input-mins" class="input-field mt-1" placeholder="Мин">
+                                    </div>
+                                    <span class="ref-hint">Норма: 6-9 часов</span>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700">Баллы сна</label>
+                                    <input type="number" id="input-score" class="input-field" placeholder="0-100">
+                                    <span class="ref-hint text-emerald-600 font-medium">Норма: 70+</span>
+                                </div>
+                                
+                                <div class="col-span-2 md:col-span-3 border-t border-slate-100 mt-2 pt-4 grid grid-cols-2 md:grid-cols-4 gap-5">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700">Глубокий %</label>
+                                        <input type="number" id="input-deep-pct" class="input-field" placeholder="%">
+                                        <span class="ref-hint">Норма: 20-60%</span>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700">Глуб. (баллы)</label>
+                                        <input type="number" id="input-deep-score" class="input-field" placeholder="0-100">
+                                        <span class="ref-hint">Норма: 70-100</span>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700">Быстрый %</label>
+                                        <input type="number" id="input-rem-pct" class="input-field" placeholder="%">
+                                        <span class="ref-hint">Норма: 10-30%</span>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-slate-700">Дыхание</label>
+                                        <input type="number" id="input-breath-score" class="input-field" placeholder="0-100">
+                                        <span class="ref-hint">Норма: 90-100</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Правая колонка -->
+                    <div class="lg:col-span-4 space-y-6">
+                        
+                        <!-- Секция: Факторы -->
+                        <div class="form-section shadow-sm h-full">
+                            <h3 class="form-section-title"><span>🧩</span> Доп. факторы</h3>
+                            
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1">Пробуждения</label>
+                                    <input type="number" id="input-awakenings" class="input-field" placeholder="Количество раз">
+                                    <span class="ref-hint">Норма: 0-1</span>
+                                </div>
+
+                                <div class="pt-2">
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">💊 Лекарство</label>
+                                    <select id="input-amitriptyline" class="input-field bg-white cursor-pointer">
+                                        <option value="Вовремя">✅ Принято вовремя</option>
+                                        <option value="Позже">⏳ Принято позже</option>
+                                        <option value="Пропустила">❌ Пропущено</option>
+                                    </select>
+                                </div>
+
+                                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3 mt-4">
+                                    <label class="flex items-center cursor-pointer group">
+                                        <div class="relative flex items-center">
+                                            <input type="checkbox" id="input-migraine" class="peer sr-only">
+                                            <div class="w-6 h-6 bg-white border-2 border-slate-300 rounded peer-checked:bg-rose-500 peer-checked:border-rose-500 transition"></div>
+                                            <svg class="absolute w-4 h-4 text-white left-1 top-1 opacity-0 peer-checked:opacity-100 pointer-events-none transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                        </div>
+                                        <span class="ml-3 text-sm font-semibold text-slate-700 group-hover:text-rose-600 transition">⚠️ Мигрень сегодня</span>
+                                    </label>
+                                    
+                                    <label class="flex items-center cursor-pointer group">
+                                        <div class="relative flex items-center">
+                                            <input type="checkbox" id="input-rule20" class="peer sr-only">
+                                            <div class="w-6 h-6 bg-white border-2 border-slate-300 rounded peer-checked:bg-indigo-500 peer-checked:border-indigo-500 transition"></div>
+                                            <svg class="absolute w-4 h-4 text-white left-1 top-1 opacity-0 peer-checked:opacity-100 pointer-events-none transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                        </div>
+                                        <span class="ml-3 text-sm font-semibold text-slate-700 group-hover:text-indigo-600 transition">✅ Правило 20 мин</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 py-2 border-t pt-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-600">💊 Амитриптилин (15:00)</label>
-                            <select id="input-amitriptyline" class="input-field">
-                                <option value="Вовремя">✅ Вовремя</option>
-                                <option value="Позже">⏳ Позже</option>
-                                <option value="Пропустила">❌ Пропустила</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center space-x-6 h-full mt-4 md:mt-0">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" id="input-migraine" class="w-4 h-4 text-indigo-600 rounded">
-                                <span class="ml-2 text-sm font-medium text-slate-700">⚠️ Мигрень</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" id="input-rule20" class="w-4 h-4 text-indigo-600 rounded">
-                                <span class="ml-2 text-sm font-medium text-slate-700">✅ Правило 20 мин</span>
-                            </label>
-                        </div>
+                    <!-- Кнопка сохранения -->
+                    <div class="lg:col-span-12 flex justify-end">
+                        <button type="submit" id="submit-btn" class="btn-primary w-full md:w-auto text-lg py-3 px-8">
+                            ☁️ Сохранить в облако
+                        </button>
                     </div>
 
-                    <div class="md:col-span-3">
-                        <button type="submit" id="submit-btn" class="btn-primary w-full md:w-auto">Сохранить в облако</button>
-                    </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </main>
 
         <!-- VIEW: HISTORY -->
-        <section id="view-history" class="hidden card overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[1000px]">
-                    <thead class="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Дата</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">💊</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Баллы</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Сон (6-9ч)</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Глуб.% (20-60)</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">REM% (10-30)</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Глуб.б (70+)</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Дых. (90+)</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Проб. (0-1)</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Энерг.</th>
-                            <th class="p-4 text-[10px] font-bold uppercase text-slate-400">Мигрень</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-body" class="divide-y divide-slate-200"></tbody>
-                </table>
+        <section id="view-history" class="hidden">
+            <div class="card overflow-hidden">
+                <div class="p-4 border-b border-slate-100 bg-white flex justify-between items-center">
+                    <h2 class="font-bold text-slate-800">Журнал записей</h2>
+                    <span class="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-1 rounded-md">Синхронизировано</span>
+                </div>
+                <div class="overflow-x-auto max-h-[600px] custom-scrollbar">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                        <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Дата</th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider text-center">💊 Лекарство</th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Баллы</th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Сон (6-9ч)</th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Глуб.% <span class="font-normal text-slate-400">(20-60)</span></th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Быстрый% <span class="font-normal text-slate-400">(10-30)</span></th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Глуб.б <span class="font-normal text-slate-400">(70+)</span></th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Дых. <span class="font-normal text-slate-400">(90+)</span></th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider">Проб. <span class="font-normal text-slate-400">(0-1)</span></th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider text-center">Энерг.</th>
+                                <th class="p-4 text-[11px] font-bold uppercase text-slate-500 tracking-wider text-center">Мигрень</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
         <!-- VIEW: STATS -->
-        <section id="view-stats" class="hidden space-y-8">
+        <section id="view-stats" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="card p-6">
-                    <h3 class="font-bold text-slate-800 mb-4 text-center">Время засыпания (Реф: 22:30)</h3>
-                    <div class="h-[250px]"><canvas id="chart-sleep-at"></canvas></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Быстрый сон %</h3>
+                        <span class="text-xs font-semibold bg-amber-50 text-amber-600 px-2 py-1 rounded">Норма: 10-30</span>
+                    </div>
+                    <div class="h-[250px] w-full"><canvas id="chart-rem-pct"></canvas></div>
                 </div>
                 <div class="card p-6">
-                    <h3 class="font-bold text-slate-800 mb-4 text-center">Баллы сна (Реф: 70+)</h3>
-                    <div class="h-[250px]"><canvas id="chart-score"></canvas></div>
-                </div>
-                <div class="card p-6">
-                    <h3 class="font-bold text-slate-800 mb-4 text-center">REM сон % (Норма: 10-30)</h3>
-                    <div class="h-[250px]"><canvas id="chart-rem-pct"></canvas></div>
-                </div>
-                <div class="card p-6">
-                    <h3 class="font-bold text-slate-800 mb-4 text-center">Время подъема (Реф: 06:00)</h3>
-                    <div class="h-[250px]"><canvas id="chart-wake-time"></canvas></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Время подъема</h3>
+                        <span class="text-xs font-semibold bg-emerald-50 text-emerald-600 px-2 py-1 rounded">Реф: 06:00</span>
+                    </div>
+                    <div class="h-[250px] w-full"><canvas id="chart-wake-time"></canvas></div>
                 </div>
             </div>
         </section>
 
         <!-- VIEW: HYPOTHESES -->
-        <section id="view-hypotheses" class="hidden space-y-6">
-            <div class="grid grid-cols-1 gap-4">
-                <div class="card p-6 bg-rose-50 border-rose-100 priority-high">
-                    <h3 class="font-bold text-rose-800 text-lg mb-2 flex items-center">🔴 Критические факторы</h3>
-                    <p class="text-sm text-slate-600">Подъем в 06:00, Амитриптилин 15:00, Постепенное снижение энергетиков, Лайтбокс.</p>
+        <section id="view-hypotheses" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 bg-gradient-to-br from-rose-50 to-white border-rose-100 priority-high">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-rose-100 rounded-lg text-rose-600">🔴</div>
+                        <h3 class="font-bold text-rose-900 text-lg">Критические факторы</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="px-3 py-1.5 bg-white border border-rose-200 rounded-lg text-sm font-medium text-rose-700 shadow-sm">⏰ Подъем строго в 06:00</span>
+                        <span class="px-3 py-1.5 bg-white border border-rose-200 rounded-lg text-sm font-medium text-rose-700 shadow-sm">💊 Лекарство в 15:00</span>
+                        <span class="px-3 py-1.5 bg-white border border-rose-200 rounded-lg text-sm font-medium text-rose-700 shadow-sm">🍃 Снижение энергетиков</span>
+                        <span class="px-3 py-1.5 bg-white border border-rose-200 rounded-lg text-sm font-medium text-rose-700 shadow-sm">💡 Лайтбокс утром</span>
+                    </div>
                 </div>
-                <div class="card p-6 bg-amber-50 border-amber-100 priority-med">
-                    <h3 class="font-bold text-amber-800 text-lg mb-2 flex items-center">🟡 Высокая значимость</h3>
-                    <p class="text-sm text-slate-600">Магний 20:00, E-ink чтение (30 мин), Холод + Дыхание.</p>
+                
+                <div class="card p-6 bg-gradient-to-br from-amber-50 to-white border-amber-100 priority-med">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-amber-100 rounded-lg text-amber-600">🟡</div>
+                        <h3 class="font-bold text-amber-900 text-lg">Высокая значимость</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-sm font-medium text-amber-700 shadow-sm">💊 Магний 20:00</span>
+                        <span class="px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-sm font-medium text-amber-700 shadow-sm">📖 E-ink чтение (30 мин)</span>
+                        <span class="px-3 py-1.5 bg-white border border-amber-200 rounded-lg text-sm font-medium text-amber-700 shadow-sm">❄️ Холод + Дыхание</span>
+                    </div>
                 </div>
-                <div class="card p-6 bg-emerald-50 border-emerald-100 priority-low">
-                    <h3 class="font-bold text-emerald-800 text-lg mb-2 flex items-center">🟢 Вспомогательные</h3>
-                    <p class="text-sm text-slate-600">Чай, Мозаика.</p>
+                
+                <div class="card p-6 bg-gradient-to-br from-emerald-50 to-white border-emerald-100 priority-low md:col-span-2">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="p-2 bg-emerald-100 rounded-lg text-emerald-600">🟢</div>
+                        <h3 class="font-bold text-emerald-900 text-lg">Вспомогательные факторы</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="px-3 py-1.5 bg-white border border-emerald-200 rounded-lg text-sm font-medium text-emerald-700 shadow-sm">🍵 Травяной чай</span>
+                        <span class="px-3 py-1.5 bg-white border border-emerald-200 rounded-lg text-sm font-medium text-emerald-700 shadow-sm">🧩 Мозаика для успокоения</span>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- VIEW: SCHEDULE -->
-        <section id="view-schedule" class="hidden space-y-4">
-            <div id="week-1" class="week-card card p-6 bg-slate-50 border-slate-300 opacity-75">
+        <section id="view-schedule" class="hidden space-y-6">
+            <div id="week-1" class="week-card card p-6 bg-slate-50/50 border-slate-200 opacity-60">
                 <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Неделя 1 (Завершена)</span>
-                        <h2 class="text-xl font-bold text-slate-400">Отпуск / Сбой режима</h2>
-                        <p class="text-sm text-slate-400 italic">4 марта – 15 марта</p>
+                        <span class="inline-block px-2 py-1 bg-slate-200 text-slate-600 text-xs font-bold rounded mb-2 uppercase tracking-wider">Неделя 1 (Завершена)</span>
+                        <h2 class="text-xl font-bold text-slate-500">Отпуск / Сбой режима</h2>
+                        <p class="text-sm text-slate-400 font-medium mt-1">4 марта – 15 марта</p>
                     </div>
                 </div>
-                <p class="text-sm text-slate-400">Эксперимент пошел не по плану из-за отпуска. Данные считаются фоновыми.</p>
+                <p class="text-sm text-slate-500 bg-white p-3 rounded-lg border border-slate-100">Эксперимент пошел не по плану из-за отпуска. Данные считаются фоновыми.</p>
             </div>
-            <div id="week-2" class="week-card card p-6">
-                <div class="flex justify-between items-start mb-4">
+            
+            <div id="week-2" class="week-card card p-6 shadow-md relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10"></div>
+                <div class="flex justify-between items-start mb-5">
                     <div>
-                        <span class="text-xs font-bold text-rose-500 uppercase tracking-wider">Неделя 2 (Рестарт)</span>
-                        <h2 class="text-xl font-bold text-slate-800">Чистый фокус: Кофеин + Чтение</h2>
-                        <p class="text-sm text-slate-500 italic">16 марта – 22 марта</p>
+                        <span class="inline-block px-2 py-1 bg-rose-100 text-rose-600 text-xs font-bold rounded mb-2 uppercase tracking-wider">Неделя 2 (Рестарт)</span>
+                        <h2 class="text-2xl font-bold text-slate-800">Чистый фокус: Кофеин + Чтение</h2>
+                        <p class="text-sm text-indigo-600 font-medium mt-1">16 марта – 22 марта</p>
                     </div>
                 </div>
-                <div class="space-y-3">
-                    <div class="check-item"><span class="check-icon">⏰</span> <span><strong>Подъем:</strong> Возвращение к 06:00.</span></div>
-                    <div class="check-item"><span class="check-icon">🍃</span> <span><strong>Детокс:</strong> Постепенное снижение энергетиков. Цель: 1 баночка.</span></div>
-                    <div class="check-item"><span class="check-icon">📖</span> <span><strong>Переходная стадия:</strong> Чтение 30 минут перед сном.</span></div>
+                <div class="space-y-4 bg-white/60 p-4 rounded-xl border border-slate-100">
+                    <div class="check-item"><span class="check-icon text-xl">⏰</span> <span><strong class="text-slate-800">Подъем:</strong> Возвращение к 06:00.</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">🍃</span> <span><strong class="text-slate-800">Детокс:</strong> Постепенное снижение энергетиков. Цель: 1 баночка.</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">📖</span> <span><strong class="text-slate-800">Переходная стадия:</strong> Чтение 30 минут перед сном.</span></div>
+                </div>
+            </div>
+
+            <div id="week-3" class="week-card card p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-5">
+                    <div>
+                        <span class="inline-block px-2 py-1 bg-amber-100 text-amber-600 text-xs font-bold rounded mb-2 uppercase tracking-wider">Неделя 3</span>
+                        <h2 class="text-2xl font-bold text-slate-800">Переход: Подготовка ко сну</h2>
+                        <p class="text-sm text-amber-600 font-medium mt-1">23 марта – 29 марта</p>
+                    </div>
+                </div>
+                <div class="space-y-4 bg-white/60 p-4 rounded-xl border border-slate-100">
+                    <div class="check-item"><span class="check-icon text-xl">🍃</span> <span><strong class="text-slate-800">Детокс:</strong> Энергетики 1,5 банки.</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">🍵</span> <span><strong class="text-slate-800">Вечер:</strong> Травяной чай.</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">📖</span> <span><strong class="text-slate-800">Ритуал:</strong> Чтение за 1 час до сна.</span></div>
+                </div>
+            </div>
+
+            <div id="week-4" class="week-card card p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-5">
+                    <div>
+                        <span class="inline-block px-2 py-1 bg-blue-100 text-blue-600 text-xs font-bold rounded mb-2 uppercase tracking-wider">Неделя 4</span>
+                        <h2 class="text-2xl font-bold text-slate-800">Сдвиг режима: 07:00 / 23:00</h2>
+                        <p class="text-sm text-blue-600 font-medium mt-1">30 марта – 5 апреля</p>
+                    </div>
+                </div>
+                <div class="space-y-4 bg-white/60 p-4 rounded-xl border border-slate-100">
+                    <div class="check-item"><span class="check-icon text-xl">⏰</span> <span><strong class="text-slate-800">Режим:</strong> Подъем в 07:00, отбой в 23:00 (Пт-Сб: +1 час).</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">🍃</span> <span><strong class="text-slate-800">Детокс:</strong> Энергетик 1 банка + настой шиповника днем (вместо маленькой банки).</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">📖</span> <span><strong class="text-slate-800">Ритуал:</strong> Чтение за 1 час до сна.</span></div>
+                </div>
+            </div>
+
+            <div id="week-5" class="week-card card p-6 shadow-sm">
+                <div class="flex justify-between items-start mb-5">
+                    <div>
+                        <span class="inline-block px-2 py-1 bg-emerald-100 text-emerald-600 text-xs font-bold rounded mb-2 uppercase tracking-wider">Неделя 5</span>
+                        <h2 class="text-2xl font-bold text-slate-800">Целевой режим: 06:00 / 22:00</h2>
+                        <p class="text-sm text-emerald-600 font-medium mt-1">6 апреля – 12 апреля</p>
+                    </div>
+                </div>
+                <div class="space-y-4 bg-white/60 p-4 rounded-xl border border-slate-100">
+                    <div class="check-item"><span class="check-icon text-xl">⏰</span> <span><strong class="text-slate-800">Режим:</strong> Подъем в 06:00, отбой в 22:00 (Пт-Сб: +1 час).</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">🍃</span> <span><strong class="text-slate-800">Поддержка:</strong> Энергетик 1 банка + настой шиповника.</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">💊</span> <span><strong class="text-slate-800">Добавки:</strong> Магний в 20:00.</span></div>
+                    <div class="check-item"><span class="check-icon text-xl">📖</span> <span><strong class="text-slate-800">Ритуал:</strong> Чтение за 1 час до сна.</span></div>
                 </div>
             </div>
         </section>
@@ -254,6 +480,7 @@
         import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
+        // FIREBASE CONFIGURATION (UNCHANGED)
         const firebaseConfig = {
             apiKey: "AIzaSyDaYnBz2Bdv-nqETKlIQaKid_umHgr_2N0",
             authDomain: "sleeptracker-5962d.firebaseapp.com",
@@ -273,11 +500,14 @@
         let chartInstances = {};
 
         const phases = [
-            { name: 'Отпуск', start: '2026-03-04', end: '2026-03-15', color: 'rgba(148, 163, 184, 0.05)' },
+            { name: 'Отпуск', start: '2026-03-04', end: '2026-03-15', color: 'rgba(148, 163, 184, 0.08)' },
             { name: 'Рестарт', start: '2026-03-16', end: '2026-03-22', color: 'rgba(239, 68, 68, 0.05)' },
-            { name: 'Свет', start: '2026-03-23', end: '2026-03-29', color: 'rgba(245, 158, 11, 0.05)' }
+            { name: 'Неделя 3', start: '2026-03-23', end: '2026-03-29', color: 'rgba(245, 158, 11, 0.05)' },
+            { name: 'Неделя 4', start: '2026-03-30', end: '2026-04-05', color: 'rgba(59, 130, 246, 0.05)' },
+            { name: 'Неделя 5', start: '2026-04-06', end: '2026-04-12', color: 'rgba(16, 185, 129, 0.05)' }
         ];
 
+        // AUTHENTICATION STATE
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('auth-screen').classList.add('hidden');
@@ -297,32 +527,52 @@
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            try { await signInWithEmailAndPassword(auth, email, pass); } 
-            catch (err) { document.getElementById('login-error').classList.remove('hidden'); }
+            try { 
+                const btn = document.getElementById('login-btn');
+                const originalText = btn.innerText;
+                btn.innerText = 'Загрузка...';
+                await signInWithEmailAndPassword(auth, email, pass); 
+            } 
+            catch (err) { 
+                document.getElementById('login-error').classList.remove('hidden'); 
+                document.getElementById('login-btn').innerText = 'Войти в систему';
+            }
         };
 
         window.logout = () => signOut(auth);
 
+        // DATA SYNC
         function syncData() {
             if (!auth.currentUser) return;
             const logsRef = collection(db, 'artifacts', appId, 'public', 'data', 'logs');
             onSnapshot(logsRef, (snapshot) => {
-                sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(a.date) - new Date(a.date));
-                // Fix: ensure correct sorting for the chart
                 sleepData = snapshot.docs.map(doc => doc.data()).sort((a, b) => new Date(a.date) - new Date(b.date));
                 updateUI();
                 if (!document.getElementById('view-stats').classList.contains('hidden')) renderCharts();
             });
         }
 
+        // TAB NAVIGATION
         window.switchTab = (tab) => {
             ['form', 'history', 'stats', 'hypotheses', 'schedule'].forEach(t => {
-                document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
-                document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                
+                if (t === tab) {
+                    view.classList.remove('hidden');
+                    btn.classList.add('active');
+                } else {
+                    view.classList.add('hidden');
+                    btn.classList.remove('active');
+                }
             });
-            if (tab === 'stats') renderCharts();
+            if (tab === 'stats') {
+                // slight delay to ensure container is visible for Chart.js rendering
+                setTimeout(renderCharts, 50); 
+            }
         };
 
+        // HIGHLIGHT ACTIVE WEEK
         function highlightCurrentWeek() {
             const today = new Date();
             phases.forEach((p, index) => {
@@ -331,8 +581,14 @@
             });
         }
 
+        // FORM SUBMISSION (Original Logic & Keys Preserved)
         document.getElementById('sleep-form').onsubmit = async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Сохранение...';
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
             const date = document.getElementById('input-date').value;
             const entry = {
                 date,
@@ -347,39 +603,64 @@
                 totalMinutes: (parseInt(document.getElementById('input-hours').value) || 0) * 60 + (parseInt(document.getElementById('input-mins').value) || 0),
                 migraine: document.getElementById('input-migraine').checked,
                 rule20: document.getElementById('input-rule20').checked,
-                amitriptyline: document.getElementById('input-amitriptyline').value,
+                amitriptyline: document.getElementById('input-amitriptyline').value, // Original field key retained
                 sleepAt: document.getElementById('input-sleep-at').value || "--:--",
                 updatedAt: new Date().toISOString()
             };
+            
             try {
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'logs', date), entry);
-                alert("Данные сохранены!");
-            } catch (err) { alert("Ошибка сохранения."); }
+                
+                // Success feedback
+                btn.innerHTML = '✅ Сохранено!';
+                btn.classList.remove('from-indigo-600', 'to-indigo-500');
+                btn.classList.add('from-emerald-500', 'to-emerald-400');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed', 'from-emerald-500', 'to-emerald-400');
+                    btn.classList.add('from-indigo-600', 'to-indigo-500');
+                }, 2000);
+            } catch (err) { 
+                alert("Ошибка сохранения."); 
+                btn.innerHTML = originalText;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
         };
 
+        // RENDER TABLE
         function updateUI() {
             const body = document.getElementById('history-body');
             const displayData = [...sleepData].reverse();
-            body.innerHTML = displayData.map(d => {
+            
+            body.innerHTML = displayData.map((d, index) => {
                 const amitIcon = d.amitriptyline === 'Вовремя' ? '✅' : (d.amitriptyline === 'Позже' ? '⏳' : '❌');
-                const isRemOk = d.remPct >= 10 && d.remPct <= 30; // UPDATED to 10-30%
+                const isRemOk = d.remPct >= 10 && d.remPct <= 30;
+                
+                // Color coding for score
+                let scoreClass = 'text-slate-700 font-bold';
+                if (d.score >= 80) scoreClass = 'text-emerald-600 font-bold';
+                else if (d.score >= 70) scoreClass = 'text-indigo-600 font-bold';
+                else if (d.score > 0) scoreClass = 'text-amber-500 font-bold';
+
                 return `
                 <tr class="hover:bg-slate-50 transition text-sm">
-                    <td class="p-4 font-medium text-slate-700">${new Date(d.date).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'})}</td>
-                    <td class="p-4">${amitIcon}</td>
-                    <td class="p-4 font-bold text-indigo-600">${d.score || 0}</td>
-                    <td class="p-4">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
-                    <td class="p-4">${d.deepPct}%</td>
-                    <td class="p-4 ${isRemOk ? '' : 'text-amber-600 font-bold'}">${d.remPct || 0}%</td>
-                    <td class="p-4">${d.deepScore || 0}</td>
-                    <td class="p-4">${d.breathScore || 0}</td>
-                    <td class="p-4">${d.awakenings || 0}</td>
-                    <td class="p-4 text-center">${d.energy || 0}</td>
-                    <td class="p-4">${d.migraine ? '⚠️' : 'Нет'}</td>
+                    <td class="p-4 font-medium text-slate-800 whitespace-nowrap">${new Date(d.date).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'})}</td>
+                    <td class="p-4 text-center bg-slate-50/50">${amitIcon}</td>
+                    <td class="p-4 ${scoreClass}">${d.score || 0}</td>
+                    <td class="p-4 text-slate-600">${Math.floor(d.totalMinutes/60)}ч ${d.totalMinutes%60}м</td>
+                    <td class="p-4 text-slate-600">${d.deepPct}%</td>
+                    <td class="p-4 ${isRemOk ? 'text-slate-600' : 'text-amber-600 font-bold bg-amber-50/50 rounded'}">${d.remPct || 0}%</td>
+                    <td class="p-4 text-slate-600">${d.deepScore || 0}</td>
+                    <td class="p-4 text-slate-600">${d.breathScore || 0}</td>
+                    <td class="p-4 text-slate-600">${d.awakenings || 0}</td>
+                    <td class="p-4 text-center font-medium">${d.energy || 0}</td>
+                    <td class="p-4 text-center">${d.migraine ? '<span class="px-2 py-1 bg-rose-100 text-rose-600 rounded text-xs font-bold">Да</span>' : '<span class="text-slate-300">-</span>'}</td>
                 </tr>
             `;}).join('');
         }
 
+        // CHARTS LOGIC
         function timeToDecimal(timeStr) {
             if (!timeStr || timeStr === "--:--" || timeStr === "") return null;
             const parts = timeStr.split(':');
@@ -393,14 +674,22 @@
             id: 'phaseBackground',
             beforeDraw: (chart) => {
                 const { ctx, chartArea, scales: { x } } = chart;
+                if (!chartArea) return;
+                
                 phases.forEach(p => {
                     const startLabel = new Date(p.start).toLocaleDateString('ru-RU', {day:'numeric', month:'2-digit'});
                     const endLabel = new Date(p.end).toLocaleDateString('ru-RU', {day:'numeric', month:'2-digit'});
-                    const startPos = x.getPixelForValue(startLabel);
-                    const endPos = x.getPixelForValue(endLabel);
+                    
+                    let startPos = x.getPixelForValue(startLabel);
+                    let endPos = x.getPixelForValue(endLabel);
+                    
+                    if (startPos === undefined && x.ticks.length > 0) startPos = x.left;
+                    if (endPos === undefined && x.ticks.length > 0) endPos = x.right;
+                    
                     if (!isNaN(startPos) && !isNaN(endPos)) {
-                        ctx.save(); ctx.fillStyle = p.color;
-                        ctx.fillRect(startPos, chartArea.top, endPos - startPos, chartArea.bottom - chartArea.top);
+                        ctx.save(); 
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(Math.max(startPos, x.left), chartArea.top, Math.min(endPos, x.right) - Math.max(startPos, x.left), chartArea.bottom - chartArea.top);
                         ctx.restore();
                     }
                 });
@@ -410,9 +699,14 @@
         function renderCharts() {
             if (sleepData.length === 0) return;
             const labels = sleepData.map(d => new Date(d.date).toLocaleDateString('ru-RU', {day:'numeric', month:'2-digit'}));
+            
+            // Re-styling Chart defaults for a more modern look
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#64748b';
+            
             createChart('chart-sleep-at', labels, sleepData.map(d => timeToDecimal(d.sleepAt)), 'Заснула (час)', '#6366f1', 22.5);
             createChart('chart-score', labels, sleepData.map(d => d.score), 'Баллы сна', '#8b5cf6', 70);
-            createChart('chart-rem-pct', labels, sleepData.map(d => d.remPct), 'REM сон %', '#f59e0b', 20); // Reference at 20 as lower bound of ideal
+            createChart('chart-rem-pct', labels, sleepData.map(d => d.remPct), 'Быстрый сон %', '#f59e0b', 20);
             createChart('chart-wake-time', labels, sleepData.map(d => {
                 const t = timeToDecimal(d.wake); return (t !== null && t > 24) ? t - 24 : t;
             }), 'Подъем (час)', '#10b981', 6.0);
@@ -421,21 +715,81 @@
         function createChart(canvasId, labels, data, title, color, refLineValue) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+            
             chartInstances[canvasId] = new Chart(ctx, {
-                type: 'line', plugins: [phasePlugin],
+                type: 'line', 
+                plugins: [phasePlugin],
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: title, data: data, borderColor: color, backgroundColor: color + '22', fill: true, tension: 0.3, pointRadius: 4, spanGaps: true },
-                        { label: 'Реф', data: Array(labels.length).fill(refLineValue), borderColor: '#ef4444', borderDash: [5, 5], pointRadius: 0, fill: false, borderWidth: 2 }
+                        { 
+                            label: title, 
+                            data: data, 
+                            borderColor: color, 
+                            backgroundColor: color + '15', // Softened background fill
+                            fill: true, 
+                            tension: 0.4, // Smoother curves
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: color,
+                            pointBorderWidth: 2,
+                            pointRadius: 4, 
+                            pointHoverRadius: 6,
+                            spanGaps: true 
+                        },
+                        { 
+                            label: 'Реф', 
+                            data: Array(labels.length).fill(refLineValue), 
+                            borderColor: '#cbd5e1', // Softer reference line
+                            borderDash: [5, 5], 
+                            pointRadius: 0, 
+                            fill: false, 
+                            borderWidth: 2 
+                        }
                     ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { size: 13, family: "'Inter', sans-serif" },
+                            bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    let value = context.parsed.y;
+                                    
+                                    if (label === 'Реф') return null; // Hide ref line from tooltip
+
+                                    if (canvasId.includes('time') || canvasId.includes('at')) {
+                                        const h = value >= 24 ? Math.floor(value-24) : Math.floor(value);
+                                        const m = Math.round((value % 1) * 60);
+                                        return `${label}: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
+                                    }
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
+                    },
                     scales: {
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { maxTicksLimit: 7 }
+                        },
                         y: {
+                            border: { display: false },
+                            grid: { color: '#f1f5f9' },
                             ticks: {
+                                padding: 10,
                                 callback: value => {
                                     if (canvasId.includes('time') || canvasId.includes('at')) {
                                         const h = value >= 24 ? Math.floor(value-24) : Math.floor(value);
@@ -449,6 +803,8 @@
                 }
             });
         }
+        
+        // Init form date
         document.getElementById('input-date').valueAsDate = new Date();
     </script>
 </body>
