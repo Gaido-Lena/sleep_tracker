@@ -340,6 +340,24 @@
         <!-- VIEW: STATS -->
         <section id="view-stats" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- ВЕРНУЛ ГРАФИК 1: Время засыпания -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Время засыпания</h3>
+                        <span class="text-xs font-semibold bg-indigo-50 text-indigo-600 px-2 py-1 rounded">Реф: 22:30</span>
+                    </div>
+                    <div class="h-[250px] w-full"><canvas id="chart-sleep-at"></canvas></div>
+                </div>
+
+                <!-- ВЕРНУЛ ГРАФИК 2: Баллы сна -->
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800">Баллы сна</h3>
+                        <span class="text-xs font-semibold bg-purple-50 text-purple-600 px-2 py-1 rounded">Реф: 70+</span>
+                    </div>
+                    <div class="h-[250px] w-full"><canvas id="chart-score"></canvas></div>
+                </div>
+
                 <div class="card p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-slate-800">Быстрый сон %</h3>
